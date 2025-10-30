@@ -1,0 +1,56 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build Cloudflare Pages bundle
+        run: |
+          # Create output directory
+          mkdir -p dist
+          
+          # Copy frontend files
+          cp -r frontend/* dist/
+          
+          # Copy shared backend code for Functions
+          mkdir -p dist/_functions-lib
+          cp -r backend/src/metricsParser.js dist/_functions-lib/
+          cp -r backend/src/dashboardGenerator.js dist/_functions-lib/
+          cp -r backend/src/llmService.js dist/_functions-lib/
+          cp -r backend/src/prompts.js dist/_functions-lib/
+          
+          # Copy Functions
+          cp -r functions dist/
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: grafana-dashboard-generator
+          directory: dist
+          # Optional: Set environment variables in Cloudflare Pages UI
+          # OPENAI_API_KEY should be set as a secret in Cloudflare Pages
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deployment URL
+        run: echo "Deployed to Cloudflare Pages!"
+
