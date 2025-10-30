@@ -1,0 +1,122 @@
+# HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{handler="/api/v1/user",method="GET",status_code="200"} 1027
+http_requests_total{handler="/api/v1/user",method="POST",status_code="201"} 54
+http_requests_total{handler="/api/v1/order",method="GET",status_code="200"} 845
+http_requests_total{handler="/api/v1/order",method="POST",status_code="201"} 234
+http_requests_total{handler="/api/v1/user",method="GET",status_code="404"} 12
+http_requests_total{handler="/api/v1/user",method="GET",status_code="500"} 3
+
+# HELP http_request_duration_seconds HTTP request latency in seconds
+# TYPE http_request_duration_seconds histogram
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.005"} 250
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.01"} 520
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.025"} 800
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.05"} 920
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.1"} 980
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.25"} 1015
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="0.5"} 1025
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="1"} 1027
+http_request_duration_seconds_bucket{handler="/api/v1/user",method="GET",le="+Inf"} 1027
+http_request_duration_seconds_sum{handler="/api/v1/user",method="GET"} 25.5
+http_request_duration_seconds_count{handler="/api/v1/user",method="GET"} 1027
+
+# HELP http_request_size_bytes HTTP request size in bytes
+# TYPE http_request_size_bytes histogram
+http_request_size_bytes_bucket{handler="/api/v1/user",method="POST",le="100"} 10
+http_request_size_bytes_bucket{handler="/api/v1/user",method="POST",le="500"} 35
+http_request_size_bytes_bucket{handler="/api/v1/user",method="POST",le="1000"} 52
+http_request_size_bytes_bucket{handler="/api/v1/user",method="POST",le="5000"} 54
+http_request_size_bytes_bucket{handler="/api/v1/user",method="POST",le="+Inf"} 54
+http_request_size_bytes_sum{handler="/api/v1/user",method="POST"} 12500
+http_request_size_bytes_count{handler="/api/v1/user",method="POST"} 54
+
+# HELP http_response_size_bytes HTTP response size in bytes
+# TYPE http_response_size_bytes histogram
+http_response_size_bytes_bucket{handler="/api/v1/user",method="GET",le="100"} 50
+http_response_size_bytes_bucket{handler="/api/v1/user",method="GET",le="500"} 800
+http_response_size_bytes_bucket{handler="/api/v1/user",method="GET",le="1000"} 980
+http_response_size_bytes_bucket{handler="/api/v1/user",method="GET",le="5000"} 1020
+http_response_size_bytes_bucket{handler="/api/v1/user",method="GET",le="+Inf"} 1027
+http_response_size_bytes_sum{handler="/api/v1/user",method="GET"} 512000
+http_response_size_bytes_count{handler="/api/v1/user",method="GET"} 1027
+
+# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds
+# TYPE process_cpu_seconds_total counter
+process_cpu_seconds_total 12345.67
+
+# HELP process_resident_memory_bytes Resident memory size in bytes
+# TYPE process_resident_memory_bytes gauge
+process_resident_memory_bytes 52428800
+
+# HELP process_virtual_memory_bytes Virtual memory size in bytes
+# TYPE process_virtual_memory_bytes gauge
+process_virtual_memory_bytes 1073741824
+
+# HELP process_open_fds Number of open file descriptors
+# TYPE process_open_fds gauge
+process_open_fds 42
+
+# HELP go_goroutines Number of goroutines that currently exist
+# TYPE go_goroutines gauge
+go_goroutines 127
+
+# HELP go_memstats_alloc_bytes Number of bytes allocated and still in use
+# TYPE go_memstats_alloc_bytes gauge
+go_memstats_alloc_bytes 8388608
+
+# HELP go_memstats_heap_alloc_bytes Number of heap bytes allocated and still in use
+# TYPE go_memstats_heap_alloc_bytes gauge
+go_memstats_heap_alloc_bytes 8388608
+
+# HELP go_memstats_heap_inuse_bytes Number of heap bytes that are in use
+# TYPE go_memstats_heap_inuse_bytes gauge
+go_memstats_heap_inuse_bytes 10485760
+
+# HELP database_connections_active Number of active database connections
+# TYPE database_connections_active gauge
+database_connections_active{database="users"} 5
+database_connections_active{database="orders"} 3
+
+# HELP database_connections_idle Number of idle database connections
+# TYPE database_connections_idle gauge
+database_connections_idle{database="users"} 15
+database_connections_idle{database="orders"} 12
+
+# HELP database_query_duration_seconds Database query duration in seconds
+# TYPE database_query_duration_seconds histogram
+database_query_duration_seconds_bucket{query_type="SELECT",le="0.001"} 5000
+database_query_duration_seconds_bucket{query_type="SELECT",le="0.005"} 8500
+database_query_duration_seconds_bucket{query_type="SELECT",le="0.01"} 9200
+database_query_duration_seconds_bucket{query_type="SELECT",le="0.05"} 9800
+database_query_duration_seconds_bucket{query_type="SELECT",le="0.1"} 9950
+database_query_duration_seconds_bucket{query_type="SELECT",le="+Inf"} 10000
+database_query_duration_seconds_sum{query_type="SELECT"} 25.5
+database_query_duration_seconds_count{query_type="SELECT"} 10000
+
+# HELP cache_hits_total Total number of cache hits
+# TYPE cache_hits_total counter
+cache_hits_total{cache="redis"} 15234
+
+# HELP cache_misses_total Total number of cache misses
+# TYPE cache_misses_total counter
+cache_misses_total{cache="redis"} 543
+
+# HELP queue_messages_total Total number of messages processed
+# TYPE queue_messages_total counter
+queue_messages_total{queue="orders",status="success"} 8234
+queue_messages_total{queue="orders",status="failed"} 45
+queue_messages_total{queue="notifications",status="success"} 12543
+queue_messages_total{queue="notifications",status="failed"} 23
+
+# HELP queue_processing_duration_seconds Message processing duration
+# TYPE queue_processing_duration_seconds histogram
+queue_processing_duration_seconds_bucket{queue="orders",le="0.1"} 7500
+queue_processing_duration_seconds_bucket{queue="orders",le="0.5"} 8100
+queue_processing_duration_seconds_bucket{queue="orders",le="1"} 8250
+queue_processing_duration_seconds_bucket{queue="orders",le="5"} 8275
+queue_processing_duration_seconds_bucket{queue="orders",le="+Inf"} 8279
+queue_processing_duration_seconds_sum{queue="orders"} 1234.5
+queue_processing_duration_seconds_count{queue="orders"} 8279
+
+

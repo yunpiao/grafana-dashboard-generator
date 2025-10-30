@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metrics to Grafana Dashboard Generator</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Umami Analytics (Optional - Configure via environment variables) -->
+    <!-- Set UMAMI_WEBSITE_ID and UMAMI_SRC in your deployment environment -->
+    <script>
+        // Load Umami analytics if configured
+        (function() {
+            const websiteId = window.UMAMI_WEBSITE_ID || '';
+            const src = window.UMAMI_SRC || '';
+            
+            if (websiteId && src) {
+                const script = document.createElement('script');
+                script.async = true;
+                script.defer = true;
+                script.setAttribute('data-website-id', websiteId);
+                script.src = src;
+                document.head.appendChild(script);
+                console.log('Umami analytics enabled');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1><span class="header-emoji">📊</span> <span data-i18n="app.title">Metrics to Grafana Dashboard</span></h1>
+                    <p class="subtitle" data-i18n="app.subtitle">Automatically generate beautiful Grafana dashboards from your Prometheus metrics using AI</p>
+                </div>
+                <div class="language-switcher">
+                    <select id="languageSelector" class="language-select">
+                        <option value="zh-CN">中文</option>
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="es">Español</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="card-header">
+                    <h2 data-i18n="steps.step1.title">Step 1: Paste Your Metrics</h2>
+                    <p data-i18n="steps.step1.description">Copy metrics from your <code>/metrics</code> endpoint and paste them below</p>
+                </div>
+                <div class="card-body">
+                    <textarea 
+                        id="metricsInput" 
+                        data-i18n-placeholder="placeholders.metricsInput"
+                        placeholder="# HELP http_requests_total Total number of HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{handler=&quot;/api/v1/user&quot;,method=&quot;GET&quot;,status_code=&quot;200&quot;} 1027
+...
+
+Paste your Prometheus metrics here"
+                        rows="15"
+                    ></textarea>
+                    
+                    <div class="metrics-stats" id="metricsStats" style="display: none;">
+                        <span class="stat-badge">📈 <span id="metricsCount">0</span> <span data-i18n="labels.metricsDetected">metrics detected</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header compact">
+                    <div class="config-header-row">
+                        <h2 data-i18n="steps.step2.title">Step 2: Config Your LLM</h2>
+                        <button id="manageConfigsBtn" class="btn btn-secondary btn-sm" data-i18n="buttons.manageConfigs">
+                            ⚙️ Manage Configurations
+                        </button>
+                        <div class="config-selector-inline">
+                            <label for="configSelector" data-i18n="labels.savedConfig">Saved Configuration:</label>
+                            <select id="configSelector" class="form-select">
+                                <option value="" data-i18n="labels.enterManually">-- Enter Manually --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body compact">
+                    <div class="config-form-grid">
+                        <div class="form-group-vertical">
+                            <label for="apiKeyInput">
+                                <span data-i18n="labels.apiKey">API Key:</span>
+                                <span class="optional" data-i18n="labels.optional">(optional)</span>
+                            </label>
+                            <input 
+                                type="password" 
+                                id="apiKeyInput" 
+                                data-i18n-placeholder="placeholders.apiKey"
+                                placeholder="sk-... or JWT token"
+                                autocomplete="off"
+                            >
+                        </div>
+                        
+                        <div class="form-group-vertical">
+                            <label for="apiBaseURLInput">
+                                <span data-i18n="labels.apiBaseURL">API Base URL:</span>
+                                <span class="optional" data-i18n="labels.optional">(optional)</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="apiBaseURLInput" 
+                                data-i18n-placeholder="placeholders.apiBaseURL"
+                                placeholder="https://api.minimaxi.com/v1"
+                                autocomplete="off"
+                            >
+                        </div>
+                        
+                        <div class="form-group-vertical">
+                            <label for="modelNameInput">
+                                <span data-i18n="labels.modelName">Model Name:</span>
+                                <span class="optional" data-i18n="labels.optional">(optional)</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="modelNameInput" 
+                                data-i18n-placeholder="placeholders.modelName"
+                                placeholder="gpt-4-turbo-preview / MiniMax-M2"
+                                autocomplete="off"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="config-actions">
+                        <button id="saveCurrentConfigBtn" class="btn btn-secondary btn-sm" data-i18n="buttons.saveConfig">
+                            💾 Save Current Config
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Management Modal -->
+            <div id="configModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 data-i18n="modals.manageConfigs">⚙️ Manage API Configurations</h2>
+                        <button id="closeModalBtn" class="close-btn">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="config-list" id="configList"></div>
+                        <div class="modal-actions">
+                            <button id="addNewConfigBtn" class="btn btn-primary" data-i18n="buttons.addNewConfig">
+                                ➕ Add New Configuration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Configuration Modal -->
+            <div id="editConfigModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="editConfigTitle" data-i18n="modals.editConfig">✏️ Edit Configuration</h2>
+                        <button id="closeEditModalBtn" class="close-btn">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="editConfigName" data-i18n="labels.configName">Configuration Name</label>
+                            <input 
+                                type="text" 
+                                id="editConfigName" 
+                                data-i18n-placeholder="placeholders.configName"
+                                placeholder="e.g., OpenAI Production, MiniMax Test"
+                                class="form-input"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="editConfigApiKey" data-i18n="labels.apiKey">API Key</label>
+                            <input 
+                                type="password" 
+                                id="editConfigApiKey" 
+                                data-i18n-placeholder="placeholders.apiKey"
+                                placeholder="sk-... or JWT token"
+                                class="form-input"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="editConfigApiBaseURL" data-i18n="labels.apiBaseURL">API Base URL</label>
+                            <input 
+                                type="text" 
+                                id="editConfigApiBaseURL" 
+                                data-i18n-placeholder="placeholders.apiBaseURL"
+                                placeholder="https://api.minimaxi.com/v1"
+                                class="form-input"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="editConfigModelName" data-i18n="labels.modelName">Model Name</label>
+                            <input 
+                                type="text" 
+                                id="editConfigModelName" 
+                                data-i18n-placeholder="placeholders.modelName"
+                                placeholder="gpt-4-turbo-preview"
+                                class="form-input"
+                            >
+                        </div>
+                        <div class="modal-actions">
+                            <button id="saveEditConfigBtn" class="btn btn-primary" data-i18n="buttons.save">
+                                💾 Save
+                            </button>
+                            <button id="cancelEditConfigBtn" class="btn btn-secondary" data-i18n="buttons.cancel">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button id="generateBtn" class="btn btn-primary" data-i18n="buttons.generate">
+                    ✨ Generate Dashboard
+                </button>
+            </div>
+
+            <div id="progressSection" class="progress-section" style="display: none;">
+                <div class="progress-card">
+                    <div class="spinner"></div>
+                    <div class="progress-text">
+                        <h3 id="progressTitle" data-i18n="progress.analyzing">Analyzing metrics...</h3>
+                        <p id="progressMessage" data-i18n="progress.analyzingMessage">This may take 30-60 seconds depending on the number of metrics</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="metricsInfoSection" class="card" style="display: none;">
+                <div class="card-header">
+                    <h2><span class="header-emoji">📊</span> <span data-i18n="steps.step3.title">Metrics Information</span></h2>
+                    <p data-i18n="steps.step3.description">Review the extracted metrics information before continuing to AI analysis</p>
+                </div>
+                <div class="card-body">
+                    <div class="metrics-summary">
+                        <div class="summary-stat">
+                            <span class="summary-label" data-i18n="stats.totalMetrics">Total Metrics:</span>
+                            <span class="summary-value" id="totalMetricsCount">0</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="summary-label" data-i18n="stats.uniqueLabels">Unique Labels:</span>
+                            <span class="summary-value" id="uniqueLabelsCount">0</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="summary-label" data-i18n="stats.metricTypes">Metric Types:</span>
+                            <span class="summary-value" id="metricTypesCount">0</span>
+                        </div>
+                    </div>
+
+                    <div class="metrics-details">
+                        <div class="metrics-section">
+                            <h3><span class="header-emoji">📋</span> <span data-i18n="sections.metricsList">Metrics List</span></h3>
+                            <div id="metricsListContainer" class="metrics-list"></div>
+                        </div>
+
+                        <div class="metrics-section">
+                            <h3><span class="header-emoji">🏷️</span> <span data-i18n="sections.commonLabels">Common Labels</span></h3>
+                            <div id="labelsListContainer" class="labels-list"></div>
+                        </div>
+
+                        <div class="metrics-section">
+                            <h3><span class="header-emoji">📊</span> <span data-i18n="sections.metricTypesTitle">Metric Types</span></h3>
+                            <div id="typesListContainer" class="types-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-actions">
+                        <button id="proceedToAnalysisBtn" class="btn btn-primary" data-i18n="buttons.nextAnalysis">
+                            ➡️ Next: AI Analysis
+                        </button>
+                        <button id="backToEditBtn" class="btn btn-secondary" data-i18n="buttons.backToEdit">
+                            ← Back to Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="panelPlansSection" class="card" style="display: none;">
+                <div class="card-header">
+                    <h2><span class="header-emoji">📋</span> <span data-i18n="steps.step4.title">Planned Panels</span></h2>
+                    <p data-i18n="steps.step4.description">AI analyzed your metrics and planned the following panels. Select which ones to generate:</p>
+                </div>
+                <div class="card-body">
+                    <div class="panel-plans-controls">
+                        <div class="selection-info">
+                            <span id="selectionCount">0</span> <span data-i18n="labels.of">of</span> <span id="totalPlansCount">0</span> <span data-i18n="labels.panelsSelected">panels selected</span>
+                        </div>
+                        <div class="selection-actions">
+                            <button id="selectAllBtn" class="btn btn-secondary btn-sm" data-i18n="buttons.selectAll">✓ Select All</button>
+                            <button id="deselectAllBtn" class="btn btn-secondary btn-sm" data-i18n="buttons.deselectAll">✗ Deselect All</button>
+                        </div>
+                    </div>
+                    <div id="panelPlansList" class="panel-plans-list"></div>
+                    <div class="panel-plans-actions">
+                        <button id="generateSelectedBtn" class="btn btn-primary" data-i18n="buttons.generateSelected">
+                            ✨ Generate Selected Panels
+                        </button>
+                        <button id="cancelGenerationBtn" class="btn btn-secondary" data-i18n="buttons.startOver">
+                            ← Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultSection" class="card" style="display: none;">
+                <div class="card-header">
+                    <h2><span class="header-emoji">✅</span> <span data-i18n="steps.stepResult.title">Dashboard Generated Successfully!</span></h2>
+                </div>
+                <div class="card-body">
+                    <div class="result-stats">
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="stats.panelsPlanned">Panels Planned</span>
+                            <span class="stat-value" id="panelsPlanned">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="stats.panelsCreated">Panels Created</span>
+                            <span class="stat-value" id="panelsCreated">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="stats.generationTime">Generation Time</span>
+                            <span class="stat-value" id="generationTime">0s</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="stats.modelUsed">Model Used</span>
+                            <span class="stat-value" id="modelUsed">GPT-4</span>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button id="downloadBtn" class="btn btn-success" data-i18n="buttons.download">
+                            ⬇️ Download Dashboard JSON
+                        </button>
+                        <button id="copyBtn" class="btn btn-secondary" data-i18n="buttons.copy">
+                            📋 Copy to Clipboard
+                        </button>
+                        <button id="viewBtn" class="btn btn-secondary" data-i18n="buttons.view">
+                            👁️ View JSON
+                        </button>
+                    </div>
+
+                    <div id="jsonPreview" style="display: none;">
+                        <h3 data-i18n="jsonPreview.title">Dashboard JSON Preview</h3>
+                        <pre id="jsonContent"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorSection" class="error-card" style="display: none;">
+                <div class="error-header">
+                    <h3><span class="header-emoji">❌</span> <span data-i18n="errors.general">Error</span></h3>
+                </div>
+                <div class="error-body">
+                    <p id="errorMessage"></p>
+                    <button id="retryBtn" class="btn btn-secondary" data-i18n="buttons.retry">Try Again</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="info-card">
+                <h3><span class="header-emoji">💡</span> <span data-i18n="guide.howToUse">How to Use</span></h3>
+                <ol>
+                    <li data-i18n="guide.step1">Access your application's <code>/metrics</code> endpoint (e.g., <code>http://localhost:8080/metrics</code>)</li>
+                    <li data-i18n="guide.step2">Copy all the metrics text and paste it in the textarea above</li>
+                    <li data-i18n="guide.step3">Optionally provide your OpenAI API key (if not configured on the server)</li>
+                    <li data-i18n="guide.step4">Click "Generate Dashboard" and wait for the AI to analyze your metrics</li>
+                    <li data-i18n="guide.step5">Download the generated JSON and import it into Grafana</li>
+                </ol>
+            </div>
+
+            <div class="info-card">
+                <h3><span class="header-emoji">📥</span> <span data-i18n="guide.importToGrafana">Importing to Grafana</span></h3>
+                <ol>
+                    <li data-i18n="guide.import1">In Grafana, go to <strong>Dashboards → New → Import</strong></li>
+                    <li data-i18n="guide.import2">Click <strong>"Upload dashboard JSON file"</strong> or paste the JSON directly</li>
+                    <li data-i18n="guide.import3">Select your Prometheus data source</li>
+                    <li data-i18n="guide.import4">Click <strong>"Import"</strong></li>
+                </ol>
+            </div>
+        </footer>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+

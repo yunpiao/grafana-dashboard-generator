@@ -1,0 +1,207 @@
+{
+  "修复说明": "这个文件展示了修复前后生成的 dashboard 差异",
+  
+  "修复前的结构": {
+    "comment": "❌ 这是错误的结构 - 有外层包装且配置不完整",
+    "example": {
+      "dashboard": {
+        "title": "Auto-Generated Metrics Dashboard",
+        "schemaVersion": 38,
+        "panels": [{
+          "id": 1,
+          "type": "timeseries",
+          "title": "Request Rate",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [{
+            "expr": "rate(http_requests_total[5m])",
+            "refId": "A"
+          }],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {}
+            }
+          },
+          "options": {}
+        }],
+        "annotations": {
+          "list": []
+        }
+      },
+      "folderId": 0,
+      "folderUid": "",
+      "message": "Auto-generated"
+    }
+  },
+
+  "修复后的结构": {
+    "comment": "✅ 这是正确的结构 - 直接的 dashboard 对象且配置完整",
+    "example": {
+      "title": "Auto-Generated Metrics Dashboard",
+      "tags": ["auto-generated", "prometheus"],
+      "timezone": "browser",
+      "schemaVersion": 41,
+      "version": 1,
+      "refresh": "30s",
+      "panels": [{
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "id": 1,
+        "type": "timeseries",
+        "title": "Request Rate",
+        "pluginVersion": "12.0.1",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [{
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(http_requests_total[5m])",
+          "legendFormat": "{{ instance }}",
+          "refId": "A",
+          "format": "time_series",
+          "intervalFactor": 1
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          }
+        }
+      }],
+      "annotations": {
+        "list": [{
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "links": [],
+      "liveNow": false,
+      "preload": false
+    }
+  },
+
+  "关键差异总结": {
+    "1_结构层级": {
+      "修复前": "需要 {dashboard: {...}, folderId, folderUid}",
+      "修复后": "直接是 dashboard 对象 {...}"
+    },
+    "2_schemaVersion": {
+      "修复前": 38,
+      "修复后": 41
+    },
+    "3_panel_datasource": {
+      "修复前": "缺失",
+      "修复后": "必须包含 {type: 'prometheus', uid: 'prometheus'}"
+    },
+    "4_target_datasource": {
+      "修复前": "缺失",
+      "修复后": "必须包含在每个 target 中"
+    },
+    "5_pluginVersion": {
+      "修复前": "缺失",
+      "修复后": "12.0.1"
+    },
+    "6_target配置": {
+      "修复前": "只有 expr 和 refId",
+      "修复后": "包含 format, intervalFactor, legendFormat"
+    },
+    "7_fieldConfig_custom": {
+      "修复前": "空对象 {}",
+      "修复后": "包含 20+ 个配置项（axisBorderShow, drawStyle, lineWidth 等）"
+    },
+    "8_options": {
+      "修复前": "空对象 {}",
+      "修复后": "包含 legend 和 tooltip 配置"
+    },
+    "9_annotations": {
+      "修复前": "空数组 []",
+      "修复后": "包含标准的 Annotations & Alerts"
+    }
+  }
+}
+
