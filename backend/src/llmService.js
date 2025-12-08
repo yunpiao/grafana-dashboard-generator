@@ -1,31 +1,11 @@
 /**
  * LLM Service
- * Handles OpenAI API and compatible APIs (MiniMax, etc.) interactions
+ * Handles OpenAI-compatible HTTP interactions (edge-friendly)
  */
 
-import OpenAI from 'openai';
-
-/**
- * Create OpenAI-compatible client
- * @param {string} apiKey - API key or JWT token
- * @param {string} baseURL - Custom API base URL (optional)
- * @returns {OpenAI} OpenAI client instance
- */
-function createClient(apiKey, baseURL = null) {
-  if (!apiKey) {
-    throw new Error('API key is required');
-  }
-  
-  const config = {
-    apiKey: apiKey
-  };
-  
-  // Support custom API endpoints (like MiniMax)
-  if (baseURL) {
-    config.baseURL = baseURL;
-  }
-  
-  return new OpenAI(config);
+function normalizeBaseURL(baseURL) {
+  const url = baseURL || 'https://api.openai.com/v1';
+  return url.endsWith('/') ? url.slice(0, -1) : url;
 }
 
 /**
@@ -38,26 +18,50 @@ function createClient(apiKey, baseURL = null) {
  * @returns {Promise<string>} API response content
  */
 export async function callLLM(apiKey, systemMessage, userPrompt, model = 'gpt-4-turbo-preview', baseURL = null) {
-  const client = createClient(apiKey, baseURL);
+  if (!apiKey) {
+    throw new Error('API key is required');
+  }
+
+  const endpoint = `${normalizeBaseURL(baseURL)}/chat/completions`;
+  const payload = {
+    model: model,
+    messages: [
+      {
+        role: 'system',
+        content: systemMessage
+      },
+      {
+        role: 'user',
+        content: userPrompt
+      }
+    ],
+    temperature: 0.3, // Lower temperature for more consistent JSON output
+    max_tokens: 8000  // Increased to avoid truncation of JSON responses
+  };
   
   try {
-    const response = await client.chat.completions.create({
-      model: model,
-      messages: [
-        {
-          role: 'system',
-          content: systemMessage
-        },
-        {
-          role: 'user',
-          content: userPrompt
-        }
-      ],
-      temperature: 0.3, // Lower temperature for more consistent JSON output
-      max_tokens: 8000  // Increased to avoid truncation of JSON responses
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(payload)
     });
 
-    return response.choices[0].message.content;
+    if (!response.ok) {
+      const text = await response.text().catch(() => '<no-body>');
+      throw new Error(`LLM API call failed: ${response.status} ${response.statusText} - ${text}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+      throw new Error('LLM API call failed: empty response content');
+    }
+
+    return content;
   } catch (error) {
     console.error('LLM API Error:', error);
     throw new Error(`LLM API call failed: ${error.message}`);
