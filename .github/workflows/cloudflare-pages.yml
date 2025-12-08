@@ -30,21 +30,23 @@ jobs:
           # Copy frontend files
           cp -r frontend/* dist/
           
-          # Copy shared backend code for Functions
-          mkdir -p dist/_functions-lib
-          cp -r backend/src/metricsParser.js dist/_functions-lib/
-          cp -r backend/src/dashboardGenerator.js dist/_functions-lib/
-          cp -r backend/src/llmService.js dist/_functions-lib/
-          cp -r backend/src/prompts.js dist/_functions-lib/
+          # Copy shared backend code into functions/_lib (must be inside functions/)
+          mkdir -p dist/functions/_lib
+          cp backend/src/metricsParser.js dist/functions/_lib/
+          cp backend/src/dashboardGenerator.js dist/functions/_lib/
+          cp backend/src/llmService.js dist/functions/_lib/
+          cp backend/src/prompts.js dist/functions/_lib/
           
-          # Copy Functions
-          cp -r functions dist/
+          # Copy Functions (api handlers only, _lib already created above)
+          cp -r functions/api dist/functions/
+          cp functions/_middleware.js dist/functions/ 2>/dev/null || true
 
+      # yamllint disable-line rule:line-length
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/pages-action@v1.5.0
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}  # configured in repo settings
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}  # configured in repo settings
           projectName: grafana-dashboard-generator
           directory: dist
           # Optional: Set environment variables in Cloudflare Pages UI

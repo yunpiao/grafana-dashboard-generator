@@ -3,7 +3,7 @@
  * POST /api/generate-panels
  */
 
-import { generatePanelsFromPlans, validateDashboard } from '../../_functions-lib/dashboardGenerator.js';
+import { generatePanelsFromPlans, validateDashboard } from '../_lib/dashboardGenerator.js';
 
 export async function onRequestPost(context) {
   const startTime = Date.now();
