@@ -3,8 +3,8 @@
  * POST /api/analyze-metrics
  */
 
-import { validateMetrics } from '../_lib/metricsParser.js';
-import { analyzeMetrics } from '../_lib/dashboardGenerator.js';
+import { validateMetrics } from '../lib/metricsParser.js';
+import { analyzeMetrics } from '../lib/dashboardGenerator.js';
 
 export async function onRequestPost(context) {
   const startTime = Date.now();

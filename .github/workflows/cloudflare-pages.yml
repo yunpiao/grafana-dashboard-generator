@@ -30,12 +30,12 @@ jobs:
           # Copy frontend files
           cp -r frontend/* dist/
           
-          # Copy shared backend code into functions/_lib (must be inside functions/)
-          mkdir -p dist/functions/_lib
-          cp backend/src/metricsParser.js dist/functions/_lib/
-          cp backend/src/dashboardGenerator.js dist/functions/_lib/
-          cp backend/src/llmService.js dist/functions/_lib/
-          cp backend/src/prompts.js dist/functions/_lib/
+          # Copy shared backend code into functions/lib (no underscore prefix!)
+          mkdir -p dist/functions/lib
+          cp backend/src/metricsParser.js dist/functions/lib/
+          cp backend/src/dashboardGenerator.js dist/functions/lib/
+          cp backend/src/llmService.js dist/functions/lib/
+          cp backend/src/prompts.js dist/functions/lib/
           
           # Copy Functions (api handlers only, _lib already created above)
           cp -r functions/api dist/functions/
