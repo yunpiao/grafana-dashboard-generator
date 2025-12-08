@@ -53,13 +53,15 @@ jobs:
             --bundle \
             --platform=neutral \
             --format=esm \
-            --outfile=dist/functions/api/analyze-metrics.js
+            --outfile=dist/functions/api/analyze-metrics.js \
+            --node-path=backend/node_modules
           
           NODE_PATH=backend/node_modules esbuild functions/api/generate-panels.js \
             --bundle \
             --platform=neutral \
             --format=esm \
-            --outfile=dist/functions/api/generate-panels.js
+            --outfile=dist/functions/api/generate-panels.js \
+            --node-path=backend/node_modules
           
           # Copy simple functions that don't need bundling
           cp functions/api/health.js dist/functions/api/
