@@ -1,5 +1,38 @@
 # Agent Notes
 
+## 项目概述
+
+**Grafana Dashboard Generator** - 使用 LLM 自动从 Prometheus metrics 生成 Grafana Dashboard JSON。
+
+### 技术栈
+- **Frontend**: 纯 HTML/CSS/JS，i18n 支持
+- **Backend**: Node.js + Express（本地开发）
+- **Serverless**: Cloudflare Pages Functions（生产部署）
+- **LLM**: OpenAI 兼容 API（支持自定义 baseURL）
+
+### 目录结构
+```
+├── frontend/          # 静态前端文件
+├── backend/src/       # 后端逻辑（本地 + 共享库）
+│   ├── llmService.js      # LLM 调用（fetch-based，edge 友好）
+│   ├── metricsParser.js   # Prometheus metrics 解析
+│   ├── dashboardGenerator.js  # Dashboard 生成逻辑
+│   └── prompts.js         # LLM prompts
+├── functions/         # Cloudflare Pages Functions
+│   └── api/               # API 端点
+└── .github/workflows/ # CI/CD
+```
+
+### 关键 API
+- `POST /api/analyze-metrics` - 分析 metrics，返回 panel 计划
+- `POST /api/generate-panels` - 根据计划生成 Dashboard JSON
+
+### 部署
+- **本地**: `npm start --prefix backend`
+- **生产**: 推送到 main 分支自动部署到 Cloudflare Pages
+
+---
+
 ## Cloudflare Pages Functions 部署经验
 
 ### 问题背景
