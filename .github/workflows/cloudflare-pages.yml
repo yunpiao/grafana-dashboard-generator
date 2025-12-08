@@ -27,6 +27,13 @@ jobs:
           # Install esbuild for bundling functions
           npm install -g esbuild
           
+          # Create temporary lib for resolution (functions/lib) by copying backend sources
+          mkdir -p functions/lib
+          cp backend/src/metricsParser.js functions/lib/
+          cp backend/src/dashboardGenerator.js functions/lib/
+          cp backend/src/llmService.js functions/lib/
+          cp backend/src/prompts.js functions/lib/
+          
           # Create output directory
           mkdir -p dist
           
@@ -43,16 +50,13 @@ jobs:
             --bundle \
             --platform=neutral \
             --format=esm \
-            --outfile=dist/functions/api/analyze-metrics.js \
-            --alias:../lib/metricsParser.js=./backend/src/metricsParser.js \
-            --alias:../lib/dashboardGenerator.js=./backend/src/dashboardGenerator.js
+            --outfile=dist/functions/api/analyze-metrics.js
           
           esbuild functions/api/generate-panels.js \
             --bundle \
             --platform=neutral \
             --format=esm \
-            --outfile=dist/functions/api/generate-panels.js \
-            --alias:../lib/dashboardGenerator.js=./backend/src/dashboardGenerator.js
+            --outfile=dist/functions/api/generate-panels.js
           
           # Copy simple functions that don't need bundling
           cp functions/api/health.js dist/functions/api/
