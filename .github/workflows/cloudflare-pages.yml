@@ -24,26 +24,45 @@ jobs:
 
       - name: Build Cloudflare Pages bundle
         run: |
+          # Install esbuild for bundling functions
+          npm install -g esbuild
+          
           # Create output directory
           mkdir -p dist
           
           # Copy frontend files
           cp -r frontend/* dist/
           
-          # Copy shared backend code into functions/lib (no underscore prefix!)
-          mkdir -p dist/functions/lib
-          cp backend/src/metricsParser.js dist/functions/lib/
-          cp backend/src/dashboardGenerator.js dist/functions/lib/
-          cp backend/src/llmService.js dist/functions/lib/
-          cp backend/src/prompts.js dist/functions/lib/
+          # Create functions output directories
+          mkdir -p dist/functions/api
           
-          # Copy Functions (api handlers only, _lib already created above)
-          cp -r functions/api dist/functions/
+          # Bundle each function with its dependencies using esbuild
+          echo "=== Bundling functions with esbuild ==="
+          
+          esbuild functions/api/analyze-metrics.js \
+            --bundle \
+            --platform=neutral \
+            --format=esm \
+            --outfile=dist/functions/api/analyze-metrics.js \
+            --alias:../lib/metricsParser.js=./backend/src/metricsParser.js \
+            --alias:../lib/dashboardGenerator.js=./backend/src/dashboardGenerator.js
+          
+          esbuild functions/api/generate-panels.js \
+            --bundle \
+            --platform=neutral \
+            --format=esm \
+            --outfile=dist/functions/api/generate-panels.js \
+            --alias:../lib/dashboardGenerator.js=./backend/src/dashboardGenerator.js
+          
+          # Copy simple functions that don't need bundling
+          cp functions/api/health.js dist/functions/api/
           cp functions/_middleware.js dist/functions/ 2>/dev/null || true
           
           # Debug: show dist structure
           echo "=== dist/functions structure ==="
           find dist/functions -type f
+          echo "=== analyze-metrics.js first 20 lines ==="
+          head -20 dist/functions/api/analyze-metrics.js
 
       # yamllint disable-line rule:line-length
       - name: Publish to Cloudflare Pages
