@@ -40,18 +40,19 @@ jobs:
           # Copy Functions (api handlers only, _lib already created above)
           cp -r functions/api dist/functions/
           cp functions/_middleware.js dist/functions/ 2>/dev/null || true
+          
+          # Debug: show dist structure
+          echo "=== dist/functions structure ==="
+          find dist/functions -type f
 
       # yamllint disable-line rule:line-length
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1.5.0
+        uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}  # configured in repo settings
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}  # configured in repo settings
-          projectName: grafana-dashboard-generator
-          directory: dist
-          # Optional: Set environment variables in Cloudflare Pages UI
-          # OPENAI_API_KEY should be set as a secret in Cloudflare Pages
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=grafana-dashboard-generator
+          # Note: Set OPENAI_API_KEY in Cloudflare Pages UI > Settings > Environment variables
 
       - name: Deployment URL
         run: echo "Deployed to Cloudflare Pages!"
