@@ -29,6 +29,7 @@ jobs:
           
           # Install backend dependencies (provides openai, etc.)
           npm ci --prefix backend
+          ln -sfn backend/node_modules node_modules
           
           # Create temporary lib for resolution (functions/lib) by copying backend sources
           mkdir -p functions/lib
