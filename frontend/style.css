@@ -1449,3 +1449,78 @@ html[lang^="es"] body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
+/* Row Layout Styles */
+.row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.row-header:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+.row-header:first-child {
+    margin-top: 0;
+}
+
+.row-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: white;
+}
+
+.row-icon {
+    font-size: 1.25rem;
+}
+
+.row-title {
+    flex: 1;
+    font-size: 1.1rem;
+}
+
+.row-panel-count {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+}
+
+.row-selection-count {
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.3);
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.5rem;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+/* Panel Size Badge */
+.panel-size {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--code-bg);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-left: auto;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+/* Indent panels under row */
+.row-header + .panel-plan-card {
+    margin-left: 0;
+}
+

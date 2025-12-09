@@ -13,11 +13,14 @@ export async function onRequestPost(context) {
     const body = await context.request.json();
     const { selectedPlans, metricsSummary, openaiApiKey, apiBaseURL, modelName } = body;
 
-    // Validate input
-    if (!selectedPlans || !Array.isArray(selectedPlans) || selectedPlans.length === 0) {
+    // Validate input - support both new { rows: [...] } format and legacy array format
+    const isRowFormat = selectedPlans && selectedPlans.rows && Array.isArray(selectedPlans.rows);
+    const isLegacyFormat = selectedPlans && Array.isArray(selectedPlans) && selectedPlans.length > 0;
+    
+    if (!isRowFormat && !isLegacyFormat) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'selectedPlans is required and must be a non-empty array'
+        error: 'selectedPlans is required and must be { rows: [...] } or a non-empty array'
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }

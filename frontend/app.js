@@ -500,14 +500,19 @@ function handleBackToEdit() {
 async function handleGenerateSelected() {
     const selectedPlans = getSelectedPlans();
     
-    if (selectedPlans.length === 0) {
+    // Calculate total selected panels from rows
+    const totalSelected = selectedPlans.rows 
+        ? selectedPlans.rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0)
+        : 0;
+    
+    if (totalSelected === 0) {
         showError(t('messages.selectAtLeastOne'));
         return;
     }
 
     // Hide panel plans and show progress
     panelPlansSection.style.display = 'none';
-    showProgress(t('progress.generating'), t('progress.generatingMessage').replace('{count}', selectedPlans.length));
+    showProgress(t('progress.generating'), t('progress.generatingMessage').replace('{count}', totalSelected));
     generateSelectedBtn.disabled = true;
 
     try {
@@ -562,64 +567,206 @@ function showProgress(title, message) {
 }
 
 // Show panel plans with checkboxes for selection
+// Supports both new { rows: [...] } format and legacy array format
 function showPanelPlansWithSelection(panelPlans) {
-    if (!panelPlans || panelPlans.length === 0) return;
+    if (!panelPlans) return;
     
     panelPlansList.innerHTML = '';
-    totalPlansCount.textContent = panelPlans.length;
     
-    panelPlans.forEach((plan, index) => {
-        const planCard = document.createElement('div');
-        planCard.className = 'panel-plan-card selected'; // Selected by default
-        planCard.dataset.index = index;
+    // Normalize to rows format
+    let rows;
+    if (panelPlans.rows && Array.isArray(panelPlans.rows)) {
+        rows = panelPlans.rows;
+    } else if (Array.isArray(panelPlans)) {
+        // Legacy format
+        rows = [{ row_title: null, panels: panelPlans }];
+    } else {
+        console.error('Invalid panelPlans format');
+        return;
+    }
+    
+    // Calculate total panels
+    const totalPanels = rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0);
+    totalPlansCount.textContent = totalPanels;
+    
+    let globalIndex = 0;
+    
+    rows.forEach((row, rowIndex) => {
+        // Create row header if row has a title
+        if (row.row_title) {
+            const rowHeader = document.createElement('div');
+            rowHeader.className = 'row-header';
+            rowHeader.dataset.rowIndex = rowIndex;
+            const panelCount = row.panels?.length || 0;
+            rowHeader.innerHTML = `
+                <input type="checkbox" class="row-checkbox" checked data-row-index="${rowIndex}" title="Select/deselect all panels in this row">
+                <span class="row-icon">📁</span>
+                <span class="row-title">${row.row_title}</span>
+                <span class="row-panel-count">${panelCount} panels</span>
+                <span class="row-selection-count" data-row-index="${rowIndex}">${panelCount}/${panelCount}</span>
+            `;
+            
+            // Add click handler for row header (excluding checkbox)
+            rowHeader.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    toggleRowSelection(rowIndex);
+                }
+            });
+            
+            // Add change handler for row checkbox
+            const rowCheckbox = rowHeader.querySelector('.row-checkbox');
+            rowCheckbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                setRowSelection(rowIndex, rowCheckbox.checked);
+            });
+            
+            panelPlansList.appendChild(rowHeader);
+        }
         
-        const vizIcon = getVisualizationIcon(plan.suggested_visualization);
-        const translatedVizType = t(`visualizations.${plan.suggested_visualization}`, plan.suggested_visualization);
-        
-        planCard.innerHTML = `
-            <input type="checkbox" class="panel-plan-checkbox" checked data-index="${index}">
-            <div class="plan-header">
-                <span class="plan-number">${index + 1}</span>
-                <h4>${vizIcon} ${plan.panel_title}</h4>
-            </div>
-            <p class="plan-description">${plan.description}</p>
-            <div class="plan-details">
-                <div class="plan-detail">
-                    <span class="detail-label">${t('sections.type')}</span>
-                    <span class="detail-value">${translatedVizType}</span>
+        // Create panel cards for this row
+        const rowPanels = row.panels || [];
+        rowPanels.forEach((plan, panelIndex) => {
+            const planCard = document.createElement('div');
+            planCard.className = 'panel-plan-card selected';
+            planCard.dataset.rowIndex = rowIndex;
+            planCard.dataset.panelIndex = panelIndex;
+            planCard.dataset.globalIndex = globalIndex;
+            
+            const vizIcon = getVisualizationIcon(plan.suggested_visualization);
+            const translatedVizType = t(`visualizations.${plan.suggested_visualization}`, plan.suggested_visualization);
+            
+            // Show size info if available
+            const sizeInfo = (plan.width && plan.height) 
+                ? `<span class="panel-size">${plan.width}×${plan.height}</span>` 
+                : '';
+            
+            planCard.innerHTML = `
+                <input type="checkbox" class="panel-plan-checkbox" checked 
+                    data-row-index="${rowIndex}" data-panel-index="${panelIndex}" data-global-index="${globalIndex}">
+                <div class="plan-header">
+                    <span class="plan-number">${globalIndex + 1}</span>
+                    <h4>${vizIcon} ${plan.panel_title}</h4>
+                    ${sizeInfo}
                 </div>
-                <div class="plan-detail">
-                    <span class="detail-label">${t('sections.useMetrics')}</span>
-                    <span class="detail-value">${plan.required_metrics.join(', ')}</span>
+                <p class="plan-description">${plan.description || ''}</p>
+                <div class="plan-details">
+                    <div class="plan-detail">
+                        <span class="detail-label">${t('sections.type')}</span>
+                        <span class="detail-value">${translatedVizType}</span>
+                    </div>
+                    <div class="plan-detail">
+                        <span class="detail-label">${t('sections.useMetrics')}</span>
+                        <span class="detail-value">${(plan.required_metrics || []).join(', ')}</span>
+                    </div>
+                    ${plan.promql_hints ? `
+                    <div class="plan-detail">
+                        <span class="detail-label">${t('sections.queryHints')}</span>
+                        <span class="detail-value">${plan.promql_hints}</span>
+                    </div>
+                    ` : ''}
                 </div>
-                ${plan.promql_hints ? `
-                <div class="plan-detail">
-                    <span class="detail-label">${t('sections.queryHints')}</span>
-                    <span class="detail-value">${plan.promql_hints}</span>
-                </div>
-                ` : ''}
-            </div>
-        `;
-        
-        // Add click handler for card
-        planCard.addEventListener('click', (e) => {
-            if (e.target.type !== 'checkbox') {
-                togglePanelSelection(index);
-            }
+            `;
+            
+            // Add click handler for card
+            planCard.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    togglePanelSelectionByGlobalIndex(globalIndex);
+                }
+            });
+            
+            // Add change handler for checkbox
+            const checkbox = planCard.querySelector('.panel-plan-checkbox');
+            checkbox.addEventListener('change', () => {
+                togglePanelSelectionByGlobalIndex(globalIndex);
+            });
+            
+            panelPlansList.appendChild(planCard);
+            globalIndex++;
         });
-        
-        // Add change handler for checkbox
-        const checkbox = planCard.querySelector('.panel-plan-checkbox');
-        checkbox.addEventListener('change', () => {
-            togglePanelSelection(index);
-        });
-        
-        panelPlansList.appendChild(planCard);
     });
     
     updateSelectionCount();
     panelPlansSection.style.display = 'block';
     panelPlansSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Toggle all panels in a row
+function toggleRowSelection(rowIndex) {
+    const rowCheckbox = document.querySelector(`.row-checkbox[data-row-index="${rowIndex}"]`);
+    if (rowCheckbox) {
+        rowCheckbox.checked = !rowCheckbox.checked;
+        setRowSelection(rowIndex, rowCheckbox.checked);
+    }
+}
+
+// Set selection state for all panels in a row
+function setRowSelection(rowIndex, selected) {
+    const panelCards = document.querySelectorAll(`.panel-plan-card[data-row-index="${rowIndex}"]`);
+    
+    panelCards.forEach(card => {
+        const checkbox = card.querySelector('.panel-plan-checkbox');
+        if (checkbox) {
+            checkbox.checked = selected;
+            if (selected) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        }
+    });
+    
+    updateRowSelectionCount(rowIndex);
+    updateSelectionCount();
+}
+
+// Update the selection count display for a specific row
+function updateRowSelectionCount(rowIndex) {
+    const panelCards = document.querySelectorAll(`.panel-plan-card[data-row-index="${rowIndex}"]`);
+    const selectedCount = document.querySelectorAll(`.panel-plan-card[data-row-index="${rowIndex}"] .panel-plan-checkbox:checked`).length;
+    const totalCount = panelCards.length;
+    
+    const countDisplay = document.querySelector(`.row-selection-count[data-row-index="${rowIndex}"]`);
+    if (countDisplay) {
+        countDisplay.textContent = `${selectedCount}/${totalCount}`;
+    }
+    
+    // Update row checkbox state (checked, unchecked, or indeterminate)
+    const rowCheckbox = document.querySelector(`.row-checkbox[data-row-index="${rowIndex}"]`);
+    if (rowCheckbox) {
+        if (selectedCount === 0) {
+            rowCheckbox.checked = false;
+            rowCheckbox.indeterminate = false;
+        } else if (selectedCount === totalCount) {
+            rowCheckbox.checked = true;
+            rowCheckbox.indeterminate = false;
+        } else {
+            rowCheckbox.checked = false;
+            rowCheckbox.indeterminate = true;
+        }
+    }
+}
+
+// Toggle panel selection by global index
+function togglePanelSelectionByGlobalIndex(globalIndex) {
+    const card = document.querySelector(`.panel-plan-card[data-global-index="${globalIndex}"]`);
+    if (!card) return;
+    
+    const checkbox = card.querySelector('.panel-plan-checkbox');
+    const rowIndex = parseInt(card.dataset.rowIndex);
+    
+    if (checkbox.checked) {
+        checkbox.checked = false;
+        card.classList.remove('selected');
+    } else {
+        checkbox.checked = true;
+        card.classList.add('selected');
+    }
+    
+    // Update row selection state
+    if (!isNaN(rowIndex)) {
+        updateRowSelectionCount(rowIndex);
+    }
+    updateSelectionCount();
 }
 
 // Toggle panel selection
@@ -653,6 +800,13 @@ function selectAll() {
         checkbox.checked = true;
         checkbox.closest('.panel-plan-card').classList.add('selected');
     });
+    // Update all row checkboxes
+    document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+        checkbox.indeterminate = false;
+        const rowIndex = checkbox.dataset.rowIndex;
+        updateRowSelectionCount(parseInt(rowIndex));
+    });
     updateSelectionCount();
 }
 
@@ -662,17 +816,70 @@ function deselectAll() {
         checkbox.checked = false;
         checkbox.closest('.panel-plan-card').classList.remove('selected');
     });
+    // Update all row checkboxes
+    document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+        checkbox.indeterminate = false;
+        const rowIndex = checkbox.dataset.rowIndex;
+        updateRowSelectionCount(parseInt(rowIndex));
+    });
     updateSelectionCount();
 }
 
-// Get selected panel plans
+// Get selected panel plans in Row format
 function getSelectedPlans() {
-    const selected = [];
-    document.querySelectorAll('.panel-plan-checkbox:checked').forEach(checkbox => {
-        const index = parseInt(checkbox.dataset.index);
-        selected.push(currentPanelPlans[index]);
+    // Get all checked checkboxes with their row/panel indices
+    const checkedBoxes = document.querySelectorAll('.panel-plan-checkbox:checked');
+    
+    // Normalize currentPanelPlans to rows format
+    let originalRows;
+    if (currentPanelPlans.rows && Array.isArray(currentPanelPlans.rows)) {
+        originalRows = currentPanelPlans.rows;
+    } else if (Array.isArray(currentPanelPlans)) {
+        // Legacy format
+        originalRows = [{ row_title: null, collapsed: false, panels: currentPanelPlans }];
+    } else {
+        return { rows: [] };
+    }
+    
+    // Build selected rows structure
+    const selectedRows = [];
+    const rowSelections = new Map(); // rowIndex -> Set of panelIndices
+    
+    checkedBoxes.forEach(checkbox => {
+        const rowIndex = parseInt(checkbox.dataset.rowIndex);
+        const panelIndex = parseInt(checkbox.dataset.panelIndex);
+        
+        if (!rowSelections.has(rowIndex)) {
+            rowSelections.set(rowIndex, new Set());
+        }
+        rowSelections.get(rowIndex).add(panelIndex);
     });
-    return selected;
+    
+    // Build rows with only selected panels (sorted by rowIndex to maintain order)
+    const sortedRowIndices = [...rowSelections.keys()].sort((a, b) => a - b);
+    sortedRowIndices.forEach(rowIndex => {
+        const panelIndices = rowSelections.get(rowIndex);
+        const originalRow = originalRows[rowIndex];
+        if (!originalRow) return;
+        
+        const selectedPanels = [];
+        panelIndices.forEach(panelIndex => {
+            if (originalRow.panels && originalRow.panels[panelIndex]) {
+                selectedPanels.push(originalRow.panels[panelIndex]);
+            }
+        });
+        
+        if (selectedPanels.length > 0) {
+            selectedRows.push({
+                row_title: originalRow.row_title,
+                collapsed: originalRow.collapsed || false,
+                panels: selectedPanels
+            });
+        }
+    });
+    
+    return { rows: selectedRows };
 }
 
 // Handle cancel generation
@@ -699,8 +906,16 @@ function getVisualizationIcon(type) {
 
 // Show result
 function showResult(data, selectedPlans = null) {
+    // Calculate planned panels count from Row format or legacy
+    let plannedCount = data.metadata.totalPanelsPlanned || data.metadata.panelsCount;
+    if (selectedPlans && selectedPlans.rows) {
+        plannedCount = selectedPlans.rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0);
+    } else if (selectedPlans && Array.isArray(selectedPlans)) {
+        plannedCount = selectedPlans.length;
+    }
+    
     // Update stats
-    panelsPlanned.textContent = selectedPlans ? selectedPlans.length : (data.metadata.totalPanelsPlanned || data.metadata.panelsCount);
+    panelsPlanned.textContent = plannedCount;
     panelsCreated.textContent = data.metadata.successfulPanels || data.metadata.panelsCount;
     generationTime.textContent = `${(data.metadata.generationTimeMs / 1000).toFixed(1)}s`;
     modelUsed.textContent = data.metadata.model || 'GPT-4';

@@ -59,21 +59,26 @@ export async function onRequestPost(context) {
 
     console.log(`Metrics validated: ${validation.metricCount} metrics found`);
 
-    // Analyze metrics and get panel plans
+    // Analyze metrics and get layout plan with rows
     console.log('Analyzing metrics...');
-    const panelPlans = await analyzeMetrics(validation.summary, apiKey, model, baseURL);
+    const layoutPlan = await analyzeMetrics(validation.summary, apiKey, model, baseURL);
 
     const duration = Date.now() - startTime;
     console.log(`Analysis completed in ${duration}ms`);
 
-    // Return response
+    // Calculate total panels from rows
+    const rows = layoutPlan.rows || [];
+    const totalPanels = rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0);
+
+    // Return response with new format
     return new Response(JSON.stringify({
       success: true,
-      panelPlans: panelPlans,
+      panelPlans: layoutPlan,  // Now { rows: [...] } format
       metricsSummary: validation.summary,
       metadata: {
         metricsCount: validation.metricCount,
-        panelsPlanned: panelPlans.length,
+        rowsPlanned: rows.length,
+        panelsPlanned: totalPanels,
         analysisTimeMs: duration,
         model: model
       }

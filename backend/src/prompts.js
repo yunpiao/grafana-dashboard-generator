@@ -5,62 +5,104 @@
 
 /**
  * Stage 1: Analysis Prompt
- * Analyzes metrics and plans which panels to create
+ * Analyzes metrics and plans dashboard layout with rows and panels
  */
 export function getAnalysisPrompt(metricsSummary) {
-  return `You are an expert in Prometheus metrics and Grafana dashboards. Analyze the following metrics summary and plan what monitoring panels should be created.
+  return `You are an expert in Prometheus metrics and Grafana dashboards. Analyze the following metrics summary and plan a well-organized dashboard with rows and panels.
 
 Metrics Summary:
 ${JSON.stringify(metricsSummary, null, 2)}
 
 Your task:
 1. Identify the key monitoring capabilities these metrics provide
-2. Group related metrics together
-3. Suggest appropriate visualizations for each monitoring capability
+2. Group related panels into logical ROWS (e.g., "Overview", "HTTP Requests", "System Resources")
+3. Design an optimal layout for each row
 
-Output a JSON array of panel plans. Each plan should include:
-- panel_title: A clear, descriptive title for the panel
-- description: What this panel monitors and why it's important
-- required_metrics: Array of metric names needed for this panel
-- suggested_visualization: The visualization type (timeseries, gauge, stat, bar, table, heatmap)
-- promql_hints: Brief hints about what PromQL queries might be needed
+GRAFANA LAYOUT RULES:
+- Dashboard grid is 24 columns wide
+- Common panel widths: 6 (quarter), 8 (third), 12 (half), 24 (full)
+- Common panel heights: 3-4 (stat/gauge), 6-8 (timeseries), 10+ (tables)
+- Stat panels in overview rows are typically small (width 4-6, height 3-4)
+- Timeseries panels are typically larger (width 12-24, height 6-8)
+
+Output a JSON object with rows. Each row contains panels:
+
+{
+  "rows": [
+    {
+      "row_title": "Overview",
+      "collapsed": false,
+      "panels": [
+        {
+          "panel_title": "Total Requests",
+          "description": "Current total request count",
+          "required_metrics": ["http_requests_total"],
+          "suggested_visualization": "stat",
+          "width": 6,
+          "height": 4,
+          "promql_hints": "Use increase() for total count"
+        },
+        {
+          "panel_title": "P95 Latency",
+          "description": "95th percentile response time",
+          "required_metrics": ["http_request_duration_seconds_bucket"],
+          "suggested_visualization": "stat",
+          "width": 6,
+          "height": 4,
+          "promql_hints": "Use histogram_quantile(0.95, ...)"
+        }
+      ]
+    },
+    {
+      "row_title": "HTTP Request Trends",
+      "collapsed": false,
+      "panels": [
+        {
+          "panel_title": "Request Rate by Path",
+          "description": "Requests per second grouped by handler",
+          "required_metrics": ["http_requests_total"],
+          "suggested_visualization": "timeseries",
+          "width": 12,
+          "height": 8,
+          "promql_hints": "Use sum(rate(...)) by (handler)"
+        }
+      ]
+    }
+  ]
+}
 
 Guidelines:
-- Focus on the most important and actionable metrics
-- Prefer timeseries for trends, gauges for current values, stats for single numbers
-- Group related metrics (e.g., request rate, latency, errors together)
-- Create 5-15 panels maximum (focus on quality over quantity)
-- Consider common monitoring patterns: RED (Rate, Errors, Duration), USE (Utilization, Saturation, Errors)
+- First row should be "Overview" with key stat/gauge panels (4-6 panels, small size)
+- Group related metrics into subsequent rows (HTTP, Database, System, etc.)
+- Use timeseries for trends, stat for current values, gauge for percentages
+- Total 3-6 rows, 5-15 panels maximum
+- Consider RED (Rate, Errors, Duration) and USE (Utilization, Saturation, Errors) patterns
+- Panel widths in a row should sum to 24 (or multiples for wrapping)
 
-IMPORTANT: Output ONLY valid JSON array, no explanatory text, no <think> tags, no markdown blocks. 
-Your response must start with [ and end with ].
-
-Format:
-[
-  {
-    "panel_title": "...",
-    "description": "...",
-    "required_metrics": ["metric1", "metric2"],
-    "suggested_visualization": "timeseries",
-    "promql_hints": "..."
-  }
-]`;
+IMPORTANT: Output ONLY valid JSON object, no explanatory text, no <think> tags, no markdown blocks.
+Your response must start with { and end with }.`;
 }
 
 /**
  * Stage 2: Panel Generation Prompt
  * Generates a specific Grafana panel JSON
  */
-export function getPanelGenerationPrompt(panelPlan, metricsSummary, panelId) {
+export function getPanelGenerationPrompt(panelPlan, metricsSummary, panelId, gridPos = null) {
+  // Use provided gridPos or default
+  const finalGridPos = gridPos || { x: 0, y: 0, w: panelPlan.width || 12, h: panelPlan.height || 8 };
+  
   return `You are an expert in creating Grafana dashboard panels. Generate a complete Grafana panel JSON for the following monitoring requirement.
 
 Panel Requirement:
 ${JSON.stringify(panelPlan, null, 2)}
 
+Grid Position (use exactly as provided):
+${JSON.stringify(finalGridPos, null, 2)}
+
 Available Metrics Context:
 ${JSON.stringify(
   Object.fromEntries(
-    panelPlan.required_metrics.map(metric => [metric, metricsSummary[metric] || {}])
+    (panelPlan.required_metrics || []).map(metric => [metric, metricsSummary[metric] || {}])
   ),
   null,
   2
@@ -146,12 +188,7 @@ Generate a complete Grafana panel JSON with the following structure. This MUST b
   "title": "panel title",
   "description": "panel description",
   "pluginVersion": "12.0.1",
-  "gridPos": {
-    "x": 0,
-    "y": 0,
-    "w": 12,
-    "h": 8
-  },
+  "gridPos": ${JSON.stringify(finalGridPos)},
   "targets": [
     {
       "datasource": {

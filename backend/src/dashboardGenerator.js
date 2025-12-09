@@ -7,12 +7,110 @@ import { callLLMForJSON } from './llmService.js';
 import { getSystemMessage, getAnalysisPrompt, getPanelGenerationPrompt } from './prompts.js';
 
 /**
- * Analyze metrics and generate panel plans (Stage 1 only)
+ * Auto-group flat panel array into logical rows by visualization type
+ * @param {Array} panels - Flat array of panel plans
+ * @returns {Array} Array of row objects with grouped panels
+ */
+function autoGroupPanelsToRows(panels) {
+  // Define row categories and their panel types
+  const rowConfig = {
+    'Overview': {
+      types: ['stat', 'gauge'],
+      defaultWidth: 6,
+      defaultHeight: 4
+    },
+    'Trends': {
+      types: ['timeseries', 'graph'],
+      defaultWidth: 12,
+      defaultHeight: 8
+    },
+    'Details': {
+      types: ['table', 'heatmap', 'bar'],
+      defaultWidth: 24,
+      defaultHeight: 10
+    }
+  };
+
+  // Group panels by category
+  const grouped = {
+    'Overview': [],
+    'Trends': [],
+    'Details': []
+  };
+
+  panels.forEach(panel => {
+    const vizType = panel.suggested_visualization || 'timeseries';
+    let assigned = false;
+    
+    for (const [rowName, config] of Object.entries(rowConfig)) {
+      if (config.types.includes(vizType)) {
+        // Apply default dimensions if not set
+        grouped[rowName].push({
+          ...panel,
+          width: panel.width || config.defaultWidth,
+          height: panel.height || config.defaultHeight
+        });
+        assigned = true;
+        break;
+      }
+    }
+    
+    // Fallback to Trends if no match
+    if (!assigned) {
+      grouped['Trends'].push({
+        ...panel,
+        width: panel.width || 12,
+        height: panel.height || 8
+      });
+    }
+  });
+
+  // Build rows array, only include non-empty rows
+  const rows = [];
+  
+  if (grouped['Overview'].length > 0) {
+    rows.push({
+      row_title: 'Overview',
+      collapsed: false,
+      panels: grouped['Overview']
+    });
+  }
+  
+  if (grouped['Trends'].length > 0) {
+    rows.push({
+      row_title: 'Trends',
+      collapsed: false,
+      panels: grouped['Trends']
+    });
+  }
+  
+  if (grouped['Details'].length > 0) {
+    rows.push({
+      row_title: 'Details',
+      collapsed: false,
+      panels: grouped['Details']
+    });
+  }
+
+  // If no panels were grouped, return single row
+  if (rows.length === 0) {
+    return [{
+      row_title: 'Dashboard',
+      collapsed: false,
+      panels: panels
+    }];
+  }
+
+  return rows;
+}
+
+/**
+ * Analyze metrics and generate panel plans with row structure (Stage 1 only)
  * @param {object} metricsSummary - Parsed metrics summary
  * @param {string} apiKey - API key or JWT token
  * @param {string} model - Model to use
  * @param {string} baseURL - Custom API base URL (optional)
- * @returns {Promise<Array>} Array of panel plans
+ * @returns {Promise<object>} Object with rows array containing panel plans
  */
 export async function analyzeMetrics(metricsSummary, apiKey, model = 'gpt-4-turbo-preview', baseURL = null) {
   console.log('Starting metrics analysis...');
@@ -22,13 +120,13 @@ export async function analyzeMetrics(metricsSummary, apiKey, model = 'gpt-4-turb
   }
   
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('Stage 1: Analyzing metrics and planning panels...');
+  console.log('Stage 1: Analyzing metrics and planning dashboard layout...');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   
   const analysisPrompt = getAnalysisPrompt(metricsSummary);
   
   // Call with retry logic (up to 3 attempts)
-  const panelPlans = await callLLMForJSON(
+  const layoutPlan = await callLLMForJSON(
     apiKey,
     getSystemMessage(),
     analysisPrompt,
@@ -37,18 +135,28 @@ export async function analyzeMetrics(metricsSummary, apiKey, model = 'gpt-4-turb
     3  // Max retries for analysis stage
   );
 
-  if (!Array.isArray(panelPlans) || panelPlans.length === 0) {
-    throw new Error('LLM did not return valid panel plans. Expected a JSON array of panel plans.');
+  // Handle both new format { rows: [...] } and legacy format [...]
+  let rows;
+  if (layoutPlan.rows && Array.isArray(layoutPlan.rows)) {
+    rows = layoutPlan.rows;
+  } else if (Array.isArray(layoutPlan)) {
+    // Legacy format: auto-group panels by visualization type
+    console.log('⚠️  LLM returned flat array, applying smart grouping...');
+    rows = autoGroupPanelsToRows(layoutPlan);
+  } else {
+    throw new Error('LLM did not return valid layout. Expected { rows: [...] } or panel array.');
   }
 
-  console.log(`✅ Analysis complete: ${panelPlans.length} panels planned\n`);
+  const totalPanels = rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0);
+  console.log(`✅ Analysis complete: ${rows.length} rows, ${totalPanels} panels planned\n`);
   
-  return panelPlans;
+  return { rows };
 }
 
 /**
  * Generate panels from selected plans and create dashboard (Stage 2)
- * @param {Array} selectedPlans - Array of selected panel plans
+ * Supports both new Row-based format and legacy flat array format
+ * @param {Array|object} selectedPlans - Array of panel plans OR { rows: [...] } object
  * @param {object} metricsSummary - Parsed metrics summary (for context)
  * @param {string} apiKey - API key or JWT token
  * @param {string} model - Model to use
@@ -56,60 +164,127 @@ export async function analyzeMetrics(metricsSummary, apiKey, model = 'gpt-4-turb
  * @returns {Promise<object>} Complete result with dashboard and metadata
  */
 export async function generatePanelsFromPlans(selectedPlans, metricsSummary, apiKey, model = 'gpt-4-turbo-preview', baseURL = null) {
-  console.log(`Starting panel generation for ${selectedPlans.length} selected panels...`);
-  
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('Stage 2: Generating individual panels...');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  
-  const panels = [];
-  const failedPanels = [];
-
-  for (let i = 0; i < selectedPlans.length; i++) {
-    const plan = selectedPlans[i];
-    console.log(`\n[${i + 1}/${selectedPlans.length}] Generating: ${plan.panel_title}`);
-    
-    try {
-      const generationPrompt = getPanelGenerationPrompt(plan, metricsSummary, i + 1);
-      const panel = await callLLMForJSON(
-        apiKey,
-        getSystemMessage(),
-        generationPrompt,
-        model,
-        baseURL,
-        3  // Max retries for each panel
-      );
-      
-      if (!panel.type || !panel.targets) {
-        console.error(`  ❌ Invalid panel structure returned`);
-        failedPanels.push({ title: plan.panel_title, error: 'Invalid panel structure' });
-        continue;
-      }
-      
-      panels.push(panel);
-      console.log(`  ✅ Panel generated successfully`);
-      
-    } catch (error) {
-      console.error(`  ❌ Failed to generate panel after retries: ${plan.panel_title}`);
-      failedPanels.push({ title: plan.panel_title, error: error.message });
-    }
+  // Normalize input: convert to rows format if needed
+  let rows;
+  if (selectedPlans.rows && Array.isArray(selectedPlans.rows)) {
+    rows = selectedPlans.rows;
+  } else if (Array.isArray(selectedPlans)) {
+    // Legacy flat array format
+    rows = [{
+      row_title: null, // No row header for legacy format
+      collapsed: false,
+      panels: selectedPlans
+    }];
+  } else {
+    throw new Error('Invalid selectedPlans format. Expected array or { rows: [...] }');
   }
 
-  if (panels.length === 0) {
+  const totalPlannedPanels = rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0);
+  console.log(`Starting panel generation for ${rows.length} rows, ${totalPlannedPanels} panels...`);
+  
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('Stage 2: Generating panels with row layout...');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  
+  const allPanels = [];
+  const failedPanels = [];
+  let currentY = 0;
+  let panelId = 1;
+  let panelIndex = 0;
+
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+    const row = rows[rowIndex];
+    const rowPanels = row.panels || [];
+    
+    // Create row panel (collapsible header) if row has a title
+    if (row.row_title) {
+      console.log(`\n📁 Row ${rowIndex + 1}: ${row.row_title}`);
+      const rowPanel = createRowPanel(panelId++, row.row_title, currentY, row.collapsed || false);
+      allPanels.push(rowPanel);
+      currentY += 1; // Row header takes 1 unit height
+    }
+
+    // Track x position for panels in this row
+    let currentX = 0;
+    let maxHeightInCurrentLine = 0;
+
+    for (let i = 0; i < rowPanels.length; i++) {
+      const plan = rowPanels[i];
+      panelIndex++;
+      console.log(`  [${panelIndex}/${totalPlannedPanels}] Generating: ${plan.panel_title}`);
+      
+      // Validate and clamp panel dimensions
+      const panelWidth = Math.min(24, Math.max(1, plan.width || 12));
+      const panelHeight = Math.min(20, Math.max(2, plan.height || 8));
+
+      // Check if panel fits in current line, otherwise wrap
+      if (currentX + panelWidth > 24) {
+        currentY += maxHeightInCurrentLine;
+        currentX = 0;
+        maxHeightInCurrentLine = 0;
+      }
+
+      const gridPos = {
+        x: currentX,
+        y: currentY,
+        w: panelWidth,
+        h: panelHeight
+      };
+
+      try {
+        const generationPrompt = getPanelGenerationPrompt(plan, metricsSummary, panelId, gridPos);
+        const panel = await callLLMForJSON(
+          apiKey,
+          getSystemMessage(),
+          generationPrompt,
+          model,
+          baseURL,
+          3  // Max retries for each panel
+        );
+        
+        if (!panel.type || !panel.targets) {
+          console.error(`    ❌ Invalid panel structure returned`);
+          failedPanels.push({ title: plan.panel_title, error: 'Invalid panel structure' });
+          continue;
+        }
+        
+        // Ensure correct gridPos and id
+        panel.gridPos = gridPos;
+        panel.id = panelId++;
+        
+        allPanels.push(panel);
+        console.log(`    ✅ Panel generated (${panelWidth}x${panelHeight} at ${currentX},${currentY})`);
+        
+        // Update position tracking
+        currentX += panelWidth;
+        maxHeightInCurrentLine = Math.max(maxHeightInCurrentLine, panelHeight);
+        
+      } catch (error) {
+        console.error(`    ❌ Failed to generate panel: ${plan.panel_title}`);
+        failedPanels.push({ title: plan.panel_title, error: error.message });
+      }
+    }
+
+    // Move to next row section
+    currentY += maxHeightInCurrentLine;
+  }
+
+  if (allPanels.length === 0) {
     throw new Error('Failed to generate any panels. Please check the metrics and try again.');
   }
 
-  console.log(`\n✅ Stage 2 complete: ${panels.length}/${selectedPlans.length} panels generated successfully`);
+  const successfulPanels = allPanels.filter(p => p.type !== 'row').length;
+  console.log(`\n✅ Stage 2 complete: ${successfulPanels}/${totalPlannedPanels} panels generated successfully`);
   if (failedPanels.length > 0) {
     console.log(`⚠️  ${failedPanels.length} panels failed and were skipped`);
   }
 
   // Create dashboard structure
-  const metricNames = metricsSummary.metricNames || [];
-  const dashboard = createDashboardStructure(panels, metricNames);
+  const dashboard = createDashboardStructure(allPanels, metricsSummary);
 
   console.log(`\n🎉 Dashboard generated successfully!`);
-  console.log(`   - ${panels.length} panels created`);
+  console.log(`   - ${rows.length} rows`);
+  console.log(`   - ${successfulPanels} panels created`);
   if (failedPanels.length > 0) {
     console.log(`   - ${failedPanels.length} panels failed (skipped)`);
   }
@@ -118,16 +293,42 @@ export async function generatePanelsFromPlans(selectedPlans, metricsSummary, api
   return {
     dashboard,
     metadata: {
-      totalPanelsPlanned: selectedPlans.length,
-      successfulPanels: panels.length,
+      totalPanelsPlanned: totalPlannedPanels,
+      successfulPanels: successfulPanels,
       failedPanels: failedPanels.length,
-      failedPanelsList: failedPanels
+      failedPanelsList: failedPanels,
+      rowCount: rows.length
     }
   };
 }
 
 /**
+ * Create a Grafana row panel (collapsible section header)
+ * @param {number} id - Panel ID
+ * @param {string} title - Row title
+ * @param {number} y - Y position
+ * @param {boolean} collapsed - Whether row is collapsed by default
+ * @returns {object} Row panel object
+ */
+function createRowPanel(id, title, y, collapsed = false) {
+  return {
+    id: id,
+    type: 'row',
+    title: title,
+    collapsed: collapsed,
+    gridPos: {
+      x: 0,
+      y: y,
+      w: 24,
+      h: 1
+    },
+    panels: [] // Panels inside will follow in the array
+  };
+}
+
+/**
  * Generate a complete Grafana dashboard from metrics summary (Full flow)
+ * Now uses Row-based layout with AI-determined panel sizes
  * @param {object} metricsSummary - Parsed metrics summary
  * @param {string} apiKey - API key or JWT token
  * @param {string} model - Model to use
@@ -135,134 +336,16 @@ export async function generatePanelsFromPlans(selectedPlans, metricsSummary, api
  * @returns {Promise<object>} Complete Grafana dashboard JSON
  */
 export async function generateDashboard(metricsSummary, apiKey, model = 'gpt-4-turbo-preview', baseURL = null) {
-  console.log('Starting dashboard generation...');
-  console.log(`Using model: ${model}`);
-  if (baseURL) {
-    console.log(`Using custom API endpoint: ${baseURL}`);
-  }
+  // Stage 1: Analyze and get layout plan
+  const layoutPlan = await analyzeMetrics(metricsSummary, apiKey, model, baseURL);
   
-  // Stage 1: Analysis - Plan which panels to create
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('Stage 1: Analyzing metrics and planning panels...');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  
-  const analysisPrompt = getAnalysisPrompt(metricsSummary);
-  
-  // Call with retry logic (up to 3 attempts)
-  const panelPlans = await callLLMForJSON(
-    apiKey,
-    getSystemMessage(),
-    analysisPrompt,
-    model,
-    baseURL,
-    3  // Max retries for analysis stage
-  );
-
-  if (!Array.isArray(panelPlans) || panelPlans.length === 0) {
-    throw new Error('LLM did not return valid panel plans. Expected a JSON array of panel plans.');
-  }
-
-  console.log(`✅ Stage 1 complete: ${panelPlans.length} panels planned\n`);
-
-  // Stage 2: Generation - Create each panel
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('Stage 2: Generating individual panels...');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  const panels = [];
-  const failedPanels = [];
-  
-  for (let i = 0; i < panelPlans.length; i++) {
-    const plan = panelPlans[i];
-    console.log(`  📊 Generating panel ${i + 1}/${panelPlans.length}: ${plan.panel_title}`);
-    
-    try {
-      const generationPrompt = getPanelGenerationPrompt(plan, metricsSummary, i + 1);
-      
-      // callLLMForJSON already has retry logic (default 3 attempts)
-      const panel = await callLLMForJSON(
-        apiKey,
-        getSystemMessage(),
-        generationPrompt,
-        model,
-        baseURL,
-        3  // Max retries for each panel
-      );
-      
-      // Set grid position for automatic layout
-      panel.gridPos = calculateGridPosition(i, panelPlans.length);
-      panel.id = i + 1;
-      
-      panels.push(panel);
-      console.log(`  ✅ Panel generated successfully`);
-      
-    } catch (error) {
-      console.error(`  ❌ Failed to generate panel after retries: ${plan.panel_title}`);
-      console.error(`     Error: ${error.message}`);
-      failedPanels.push({
-        title: plan.panel_title,
-        error: error.message
-      });
-      // Continue with other panels instead of failing completely
-    }
-  }
-  
-  if (failedPanels.length > 0) {
-    console.warn(`\n⚠️  Warning: ${failedPanels.length} panel(s) failed to generate:`);
-    failedPanels.forEach(fp => console.warn(`   - ${fp.title}: ${fp.error}`));
-  }
-
-  console.log(`\n✅ Stage 2 complete: ${panels.length}/${panelPlans.length} panels generated successfully`);
-
-  // Check if we have at least some panels
-  if (panels.length === 0) {
-    throw new Error('Failed to generate any panels. All panel generation attempts failed. Please check your metrics and try again.');
-  }
-
-  // Assemble final dashboard
-  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('Assembling final dashboard...');
-  const dashboard = createDashboardStructure(panels, metricsSummary);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`\n🎉 Dashboard generated successfully!`);
-  console.log(`   - ${panels.length} panels created`);
-  if (failedPanels.length > 0) {
-    console.log(`   - ${failedPanels.length} panels failed (skipped)`);
-  }
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+  // Stage 2: Generate panels from layout plan
+  const result = await generatePanelsFromPlans(layoutPlan, metricsSummary, apiKey, model, baseURL);
   
   return {
-    dashboard,
-    panelPlans,
-    metadata: {
-      totalPanelsPlanned: panelPlans.length,
-      successfulPanels: panels.length,
-      failedPanels: failedPanels.length,
-      failedPanelsList: failedPanels
-    }
-  };
-}
-
-/**
- * Calculate grid position for a panel
- * @param {number} index - Panel index
- * @param {number} total - Total number of panels
- * @returns {object} Grid position {x, y, w, h}
- */
-function calculateGridPosition(index, total) {
-  // Grafana grid is 24 units wide
-  // Use 2 columns layout for most panels
-  const panelsPerRow = 2;
-  const panelWidth = 12; // 24 / 2
-  const panelHeight = 8;
-  
-  const row = Math.floor(index / panelsPerRow);
-  const col = index % panelsPerRow;
-  
-  return {
-    x: col * panelWidth,
-    y: row * panelHeight,
-    w: panelWidth,
-    h: panelHeight
+    dashboard: result.dashboard,
+    panelPlans: layoutPlan,
+    metadata: result.metadata
   };
 }
 

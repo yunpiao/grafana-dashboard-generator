@@ -87,14 +87,19 @@ app.post('/api/analyze-metrics', async (req, res) => {
     const duration = Date.now() - startTime;
     console.log(`Analysis completed in ${duration}ms`);
 
+    // Calculate total panels from rows structure
+    const rows = panelPlans.rows || [];
+    const totalPanels = rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0);
+
     // Return panel plans for user selection
     res.json({
       success: true,
-      panelPlans: panelPlans,
+      panelPlans: panelPlans,  // Now { rows: [...] } format
       metricsSummary: validation.summary, // Will be needed for Stage 2
       metadata: {
         metricsCount: validation.metricCount,
-        panelsPlanned: panelPlans.length,
+        rowsPlanned: rows.length,
+        panelsPlanned: totalPanels,
         analysisTimeMs: duration,
         model: model
       }
@@ -117,11 +122,14 @@ app.post('/api/generate-panels', async (req, res) => {
   try {
     const { selectedPlans, metricsSummary, openaiApiKey, apiBaseURL, modelName } = req.body;
 
-    // Validate input
-    if (!selectedPlans || !Array.isArray(selectedPlans) || selectedPlans.length === 0) {
+    // Validate input - support both new { rows: [...] } format and legacy array format
+    const isRowFormat = selectedPlans && selectedPlans.rows && Array.isArray(selectedPlans.rows);
+    const isLegacyFormat = selectedPlans && Array.isArray(selectedPlans) && selectedPlans.length > 0;
+    
+    if (!isRowFormat && !isLegacyFormat) {
       return res.status(400).json({
         success: false,
-        error: 'selectedPlans is required and must be a non-empty array'
+        error: 'selectedPlans is required and must be { rows: [...] } or a non-empty array'
       });
     }
 
@@ -148,7 +156,10 @@ app.post('/api/generate-panels', async (req, res) => {
     const model = modelName || process.env.OPENAI_MODEL || process.env.LLM_MODEL || 'gpt-4-turbo-preview';
 
     // Generate panels from selected plans
-    console.log(`Generating panels for ${selectedPlans.length} selected plans...`);
+    const planCount = isRowFormat 
+      ? selectedPlans.rows.reduce((sum, row) => sum + (row.panels?.length || 0), 0)
+      : selectedPlans.length;
+    console.log(`Generating panels for ${planCount} selected plans...`);
     const result = await generatePanelsFromPlans(selectedPlans, metricsSummary, apiKey, model, baseURL);
 
     // Validate generated dashboard
