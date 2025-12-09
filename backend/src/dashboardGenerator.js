@@ -443,6 +443,11 @@ export function validateDashboard(dashboard) {
   // Validate each panel has required fields
   if (dashboard.panels) {
     dashboard.panels.forEach((panel, index) => {
+      // Skip validation for row panels - they don't have datasource/targets
+      if (panel.type === 'row') {
+        return;
+      }
+      
       if (!panel.datasource) {
         errors.push(`Panel ${index + 1} missing datasource configuration`);
       }
