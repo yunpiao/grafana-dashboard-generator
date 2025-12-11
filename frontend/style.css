@@ -578,9 +578,15 @@ footer {
 }
 
 .panel-plans-list {
-    display: grid;
-    gap: 1rem;
+    display: block;
     margin-bottom: 1.5rem;
+}
+
+.row-panels-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .panel-plan-card {
@@ -1332,6 +1338,10 @@ footer {
     
     .metrics-actions .btn {
         width: 100%;
+    }
+
+    .row-panels-container {
+        grid-template-columns: 1fr;
     }
     
     .modal-content {

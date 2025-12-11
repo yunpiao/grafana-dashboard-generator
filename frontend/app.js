@@ -623,6 +623,11 @@ function showPanelPlansWithSelection(panelPlans) {
             panelPlansList.appendChild(rowHeader);
         }
         
+        // Create container for panels in this row
+        const rowPanelsContainer = document.createElement('div');
+        rowPanelsContainer.className = 'row-panels-container';
+        panelPlansList.appendChild(rowPanelsContainer);
+        
         // Create panel cards for this row
         const rowPanels = row.panels || [];
         rowPanels.forEach((plan, panelIndex) => {
@@ -680,7 +685,7 @@ function showPanelPlansWithSelection(panelPlans) {
                 togglePanelSelectionByGlobalIndex(globalIndex);
             });
             
-            panelPlansList.appendChild(planCard);
+            rowPanelsContainer.appendChild(planCard);
             globalIndex++;
         });
     });
