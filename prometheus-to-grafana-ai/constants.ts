@@ -112,7 +112,7 @@ export const SAMPLE_DASHBOARD_PLAN: DashboardPlan = {
       panels: [
         { id: "7", title: "WAL Fsync Latency Heatmap", type: PanelType.Heatmap, description: "WAL fsync duration distribution over time", metrics: ["etcd_disk_wal_fsync_duration_seconds_bucket"], promql_hint: "sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m])) by (le)" },
         { id: "8", title: "WAL Fsync P99", type: PanelType.Timeseries, description: "99th percentile WAL fsync latency", metrics: ["etcd_disk_wal_fsync_duration_seconds_bucket"], promql_hint: "histogram_quantile(0.99, ...)" },
-        { id: "9", title: "Backend Commit Histogram", type: PanelType.Histogram, description: "Backend commit duration distribution", metrics: ["etcd_disk_backend_commit_duration_seconds_bucket"], promql_hint: "sum by (le) (etcd_disk_backend_commit_duration_seconds_bucket)" },
+        { id: "9", title: "Backend Commit P99", type: PanelType.Timeseries, description: "99th percentile backend commit latency", metrics: ["etcd_disk_backend_commit_duration_seconds_bucket"], promql_hint: "histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket[5m])) by (le))" },
       ]
     },
     {
@@ -153,16 +153,16 @@ export const SAMPLE_DASHBOARD_RESULT: AIResponse = {
       panels: [
         { title: "WAL Fsync Latency Heatmap", type: PanelType.Heatmap, description: "WAL fsync duration distribution over time", promql: "sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m])) by (le)", unit: "s", metrics: ["etcd_disk_wal_fsync_duration_seconds_bucket"] },
         { title: "WAL Fsync P99", type: PanelType.Timeseries, description: "99th percentile WAL fsync latency", promql: "histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m])) by (le))", unit: "s", metrics: ["etcd_disk_wal_fsync_duration_seconds_bucket"] },
-        { title: "Backend Commit Histogram", type: PanelType.Histogram, description: "Backend commit duration distribution", promql: "sum by (le) (etcd_disk_backend_commit_duration_seconds_bucket)", unit: "s", metrics: ["etcd_disk_backend_commit_duration_seconds_bucket"] },
+        { title: "Backend Commit P99", type: PanelType.Timeseries, description: "99th percentile backend commit latency", promql: "histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket[5m])) by (le))", unit: "s", metrics: ["etcd_disk_backend_commit_duration_seconds_bucket"] },
       ]
     },
     {
       name: "Resources",
       panels: [
-        { title: "DB Size", type: PanelType.Stat, description: "Total etcd database size", promql: "etcd_mvcc_db_total_size_in_bytes", unit: "bytes", metrics: ["etcd_mvcc_db_total_size_in_bytes"] },
-        { title: "Memory Usage", type: PanelType.Gauge, description: "Resident memory usage", promql: "process_resident_memory_bytes", unit: "bytes", metrics: ["process_resident_memory_bytes"] },
-        { title: "Open FDs", type: PanelType.Stat, description: "Open file descriptors", promql: "process_open_fds", unit: "short", metrics: ["process_open_fds"] },
-        { title: "CPU Rate", type: PanelType.Stat, description: "CPU usage rate", promql: "rate(process_cpu_seconds_total[5m])", unit: "short", metrics: ["process_cpu_seconds_total"] },
+        { title: "DB Size", type: PanelType.Stat, description: "Total etcd database size", promql: "sum(etcd_mvcc_db_total_size_in_bytes{job=\"etcd\"})", unit: "bytes", metrics: ["etcd_mvcc_db_total_size_in_bytes"] },
+        { title: "Memory Usage", type: PanelType.Gauge, description: "Resident memory usage", promql: "sum(process_resident_memory_bytes{job=\"etcd\"})", unit: "bytes", metrics: ["process_resident_memory_bytes"] },
+        { title: "Open FDs", type: PanelType.Stat, description: "Open file descriptors", promql: "sum(process_open_fds{job=\"etcd\"})", unit: "short", metrics: ["process_open_fds"] },
+        { title: "CPU Rate", type: PanelType.Stat, description: "CPU usage rate", promql: "sum(rate(process_cpu_seconds_total{job=\"etcd\"}[5m]))", unit: "short", metrics: ["process_cpu_seconds_total"] },
       ]
     }
   ]
