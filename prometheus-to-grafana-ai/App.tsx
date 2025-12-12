@@ -8,7 +8,6 @@ import { LandingPage } from './components/LandingPage';
 import { generateDashboardPlan, generateFinalDashboard } from './services/geminiService';
 import { DashboardPlan, AIResponse } from './types';
 import { Activity } from 'lucide-react';
-import { isSampleData, SAMPLE_DASHBOARD_PLAN, SAMPLE_DASHBOARD_RESULT } from './constants';
 
 const App: React.FC = () => {
   // Show landing page or main app
@@ -34,18 +33,6 @@ const App: React.FC = () => {
     setIsGeneratingPlan(true);
 
     try {
-      // Check if using sample data - skip AI call for quick validation
-      const usingSample = isSampleData(rawMetrics);
-      
-      if (usingSample) {
-        // Simulate realistic delay for demo (10 seconds)
-        await new Promise(r => setTimeout(r, 10000));
-        setDashboardPlan(SAMPLE_DASHBOARD_PLAN);
-        setCurrentStep(2); // Go to Plan Edit
-        setIsGeneratingPlan(false);
-        return;
-      }
-
       // Real AI Call to generate plan
       const plan: DashboardPlan = await generateDashboardPlan(rawMetrics);
       setDashboardPlan(plan);
@@ -64,41 +51,15 @@ const App: React.FC = () => {
     
     setError(null);
     setCurrentStep(3); // Go to Loading
-    setLoadingLogs(['Generating PromQL queries...', 'Building panel configurations...']);
+    setLoadingLogs(['Connecting to Gemini 3 Pro...']);
 
     try {
-      const usingSample = isSampleData(rawMetrics);
-      
-      if (usingSample) {
-        // Simulate realistic delay for demo (20 seconds total)
-        addLog('Connecting to Gemini 3 Pro...');
-        await new Promise(r => setTimeout(r, 3000));
-        addLog('Analyzing metric semantics...');
-        await new Promise(r => setTimeout(r, 4000));
-        addLog('Generating PromQL expressions...');
-        await new Promise(r => setTimeout(r, 5000));
-        addLog('Building panel configurations...');
-        await new Promise(r => setTimeout(r, 5000));
-        addLog('Validating dashboard structure...');
-        await new Promise(r => setTimeout(r, 3000));
-        addLog('Done! Rendering dashboard...');
-        
-        setFinalDashboard(SAMPLE_DASHBOARD_RESULT);
-        setCurrentStep(4); // Go to Preview
-        return;
-      }
-
-      addLog('Analyzing metrics structure...');
-      await new Promise(r => setTimeout(r, 500));
-      
       addLog(`Processing ${dashboardPlan.categories.reduce((acc, c) => acc + c.panels.length, 0)} panels...`);
       
       const result = await generateFinalDashboard(rawMetrics, dashboardPlan);
       
       addLog('Finalizing Grafana JSON...');
       addLog('Done!');
-      
-      await new Promise(r => setTimeout(r, 300));
       
       setFinalDashboard(result);
       setCurrentStep(4); // Go to Preview
@@ -241,7 +202,7 @@ const App: React.FC = () => {
       {/* Bottom Notice */}
       <div className="bg-slate-50 border-t border-slate-100 py-4 text-center">
         <p className="text-slate-400 text-xs">
-          * This is an interactive simulation. No real data is sent to external servers.
+          Powered by Gemini 3 Pro. Your metrics are processed securely.
         </p>
       </div>
     </div>

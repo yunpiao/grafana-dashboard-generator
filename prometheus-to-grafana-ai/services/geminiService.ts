@@ -12,7 +12,92 @@ const getAIClient = () => {
 // Clean Markdown blocks
 const cleanResponse = (text: string | undefined): string => {
   if (!text) throw new Error("No response from AI");
-  return text.replace(/```json\n?|```/g, '').trim();
+  return text.replace(/```(?:json)?\s*|```/gi, '').trim();
+};
+
+const parseJsonFromAI = <T>(text: string | undefined): T => {
+  const cleaned = cleanResponse(text);
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    const firstObj = cleaned.indexOf('{');
+    const lastObj = cleaned.lastIndexOf('}');
+    if (firstObj !== -1 && lastObj !== -1 && lastObj > firstObj) {
+      return JSON.parse(cleaned.slice(firstObj, lastObj + 1)) as T;
+    }
+    throw new Error("Invalid JSON response from AI");
+  }
+};
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const coercePanelType = (value: unknown): PanelType => {
+  const t = typeof value === 'string' ? value.trim() : '';
+  if (t === PanelType.Timeseries) return PanelType.Timeseries;
+  if (t === PanelType.Stat) return PanelType.Stat;
+  if (t === PanelType.Gauge) return PanelType.Gauge;
+  if (t === PanelType.Heatmap) return PanelType.Heatmap;
+  if (t === PanelType.Histogram) return PanelType.Histogram;
+  throw new Error(`Invalid panel type: ${String(value)}`);
+};
+
+// Infer correct unit based on title/metric names
+const inferUnit = (title: string, promql: string, providedUnit: string): string => {
+  const t = title.toLowerCase();
+  const p = promql.toLowerCase();
+  
+  // CPU usage should be percent, not ms
+  if (t.includes('cpu') && (t.includes('usage') || t.includes('utilization'))) return 'percent';
+  if (t.includes('memory') && (t.includes('usage') || t.includes('percent'))) return 'percent';
+  if (t.includes('disk') && t.includes('usage')) return 'percent';
+  
+  // Duration/latency metrics
+  if (p.includes('_seconds') || p.includes('_duration')) return 's';
+  if (t.includes('latency') || t.includes('duration')) return 's';
+  
+  // Bytes metrics
+  if (p.includes('_bytes') || t.includes('bytes') || t.includes('memory') || t.includes('heap')) return 'bytes';
+  
+  // Rate metrics
+  if (t.includes('rate') || t.includes('per second') || t.includes('/s')) return 'reqps';
+  
+  return providedUnit || 'short';
+};
+
+const normalizeGeneratedPanel = (panel: any, panelPlan: any): any => {
+  const title = typeof panel?.title === 'string' ? panel.title.trim() : (typeof panelPlan?.title === 'string' ? panelPlan.title : '');
+  const promql = typeof panel?.promql === 'string' ? panel.promql.trim() : '';
+  const rawUnit = typeof panel?.unit === 'string' && panel.unit.trim().length > 0 ? panel.unit.trim() : 'short';
+  
+  const normalized: any = {
+    ...panel,
+    title,
+    type: coercePanelType(panel?.type ?? panelPlan?.type),
+    description: typeof panel?.description === 'string' ? panel.description : (typeof panelPlan?.description === 'string' ? panelPlan.description : ''),
+    promql,
+    unit: inferUnit(title, promql, rawUnit),
+    metrics: Array.isArray(panel?.metrics) ? panel.metrics.filter((m: any) => typeof m === 'string') : (Array.isArray(panelPlan?.metrics) ? panelPlan.metrics : [])
+  };
+
+  if (normalized.metrics.length === 0 && typeof panelPlan?.metrics === 'string') {
+    normalized.metrics = [panelPlan.metrics];
+  }
+
+  if (typeof panel?.min === 'number') normalized.min = panel.min;
+  else delete normalized.min;
+
+  if (typeof panel?.max === 'number') normalized.max = panel.max;
+  else delete normalized.max;
+
+  if (!normalized.title || !normalized.promql) {
+    throw new Error("Panel output missing required fields");
+  }
+
+  if (normalized.promql.includes('_*_')) {
+    throw new Error("PromQL contains unsupported wildcard metric name");
+  }
+
+  return normalized;
 };
 
 // Fix PromQL: replace {__name__=~"metric_a|metric_b"} with explicit metric names
@@ -40,6 +125,11 @@ const fixPromQL = (promql: string): string => {
   result = result.replace(simpleRegex, (_, metricsStr) => {
     const metrics = metricsStr.split('|').map((m: string) => m.trim());
     return metrics.join(' + ');
+  });
+
+  // Fix invalid: rate(x[5m]) by (label) -> sum by (label) (rate(x[5m]))
+  result = result.replace(/\b(rate|irate|increase)\(\s*([^\)]+?)\s*\)\s*by\s*\(\s*([^\)]+?)\s*\)/g, (_m, fn, inner, labels) => {
+    return `sum by (${labels}) (${fn}(${inner}))`;
   });
   
   return result;
@@ -152,7 +242,7 @@ export const generateDashboardPlan = async (metrics: string, userContext?: strin
   });
 
   try {
-    return JSON.parse(cleanResponse(response.text)) as DashboardPlan;
+    return parseJsonFromAI<DashboardPlan>(response.text);
   } catch (e) {
     throw new Error("Failed to parse dashboard plan.");
   }
@@ -164,6 +254,7 @@ const generateSinglePanel = async (
   metrics: string, 
   panelPlan: any
 ): Promise<any> => {
+  const retryContext = panelPlan?.__retryContext ? `\n\nPREVIOUS_ERROR: ${panelPlan.__retryContext}` : '';
   const systemInstruction = `
     You are a Senior Grafana Engineer. Generate ONE panel configuration.
     
@@ -177,11 +268,13 @@ const generateSinglePanel = async (
     FORBIDDEN (causes errors):
     - NEVER use {__name__=~"..."} - use explicit metric names with + operator instead.
     - Stat/Gauge must aggregate to single series.
+    - NEVER use metric name wildcards like metric_*_total. List each metric explicitly.
+    - Return only strict JSON that matches the schema. No markdown, no extra keys.
   `;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
-    contents: `Metrics: ${metrics}\n\nGenerate this panel: ${JSON.stringify(panelPlan)}`,
+    contents: `Metrics: ${metrics}\n\nGenerate this panel: ${JSON.stringify(panelPlan)}${retryContext}`,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -202,10 +295,42 @@ const generateSinglePanel = async (
     }
   });
 
-  const panel = JSON.parse(cleanResponse(response.text));
-  // Apply PromQL fix
-  panel.promql = fixPromQL(panel.promql || '');
+  const panel = parseJsonFromAI<any>(response.text);
+  panel.promql = fixPromQL(typeof panel.promql === 'string' ? panel.promql : '');
   return panel;
+};
+
+const generateSinglePanelWithRetry = async (
+  ai: GoogleGenAI,
+  metrics: string,
+  panelPlan: any,
+  maxAttempts: number = 5
+): Promise<any> => {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const attemptPlan = {
+        ...panelPlan,
+        __retryContext: lastError ? String(lastError) : undefined
+      };
+
+      const rawPanel = await generateSinglePanel(ai, metrics, attemptPlan);
+      const normalized = normalizeGeneratedPanel(rawPanel, panelPlan);
+      normalized.promql = fixPromQL(normalized.promql || '');
+      return normalized;
+    } catch (err) {
+      lastError = err;
+      if (attempt >= maxAttempts) {
+        const title = typeof panelPlan?.title === 'string' ? panelPlan.title : 'unknown';
+        throw new Error(`Failed to generate panel "${title}" after ${maxAttempts} attempts: ${String(err)}`);
+      }
+      const delay = Math.min(2500, 300 * Math.pow(2, attempt - 1));
+      await sleep(delay);
+    }
+  }
+
+  throw new Error("Unreachable");
 };
 
 export const generateFinalDashboard = async (metrics: string, plan: DashboardPlan): Promise<AIResponse> => {
@@ -221,7 +346,7 @@ export const generateFinalDashboard = async (metrics: string, plan: DashboardPla
 
   // Parallel generation: one request per panel
   const panelPromises = panelTasks.map(task => 
-    generateSinglePanel(ai, metrics, task.panelPlan).then(panel => ({
+    generateSinglePanelWithRetry(ai, metrics, task.panelPlan).then(panel => ({
       categoryName: task.categoryName,
       panel
     }))
