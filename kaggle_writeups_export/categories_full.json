@@ -1,0 +1,364 @@
+{
+  "categories": [
+    {
+      "name": "Healthcare & Medical",
+      "description": "Medical diagnostics, patient monitoring, clinical decision support, symptom analysis, prescription management, and healthcare delivery systems",
+      "example_keywords": [
+        "diagnosis",
+        "patient care",
+        "clinical",
+        "medical report",
+        "health monitoring",
+        "symptom checker"
+      ]
+    },
+    {
+      "name": "Education & Learning",
+      "description": "Educational platforms, AI tutoring, adaptive learning systems, course generation, study assistance, and interactive learning experiences",
+      "example_keywords": [
+        "tutoring",
+        "learning platform",
+        "study assistant",
+        "educational content",
+        "curriculum",
+        "homework help"
+      ]
+    },
+    {
+      "name": "Mental Health & Wellness",
+      "description": "Mental health support, therapy assistance, mood tracking, stress management, emotional wellness, and psychological care tools",
+      "example_keywords": [
+        "therapy",
+        "emotional support",
+        "mental wellness",
+        "mood tracking",
+        "mindfulness",
+        "stress management"
+      ]
+    },
+    {
+      "name": "Fitness & Nutrition",
+      "description": "Fitness tracking, workout coaching, nutrition analysis, meal planning, diet management, and physical wellness optimization",
+      "example_keywords": [
+        "workout",
+        "fitness tracking",
+        "nutrition",
+        "meal planning",
+        "exercise",
+        "calorie tracking"
+      ]
+    },
+    {
+      "name": "Accessibility & Assistive Technology",
+      "description": "Tools for people with disabilities including visual, hearing, cognitive, mobility impairments, and universal accessibility solutions",
+      "example_keywords": [
+        "visual impairment",
+        "hearing assistance",
+        "sign language",
+        "disability support",
+        "assistive tech",
+        "accessibility"
+      ]
+    },
+    {
+      "name": "Developer Tools & IDEs",
+      "description": "Code generation, debugging, development environments, code analysis, documentation, architecture design, and programming assistance",
+      "example_keywords": [
+        "code generation",
+        "debugging",
+        "IDE",
+        "code review",
+        "development",
+        "programming assistant"
+      ]
+    },
+    {
+      "name": "Business Intelligence & Analytics",
+      "description": "Data analysis, business insights, market intelligence, performance tracking, dashboards, and strategic decision support systems",
+      "example_keywords": [
+        "data analytics",
+        "business insights",
+        "dashboards",
+        "reporting",
+        "market intelligence",
+        "KPI tracking"
+      ]
+    },
+    {
+      "name": "Content Creation & Media",
+      "description": "Video production, image generation, content automation, storytelling, social media management, and multimedia creation tools",
+      "example_keywords": [
+        "video creation",
+        "content generation",
+        "image creation",
+        "social media",
+        "creative production",
+        "multimedia"
+      ]
+    },
+    {
+      "name": "Finance & Investment",
+      "description": "Financial planning, investment analysis, expense tracking, budgeting, accounting automation, trading platforms, and wealth management",
+      "example_keywords": [
+        "financial planning",
+        "investment",
+        "budgeting",
+        "expense tracking",
+        "trading",
+        "accounting"
+      ]
+    },
+    {
+      "name": "Career & Professional Development",
+      "description": "Job search, resume building, interview preparation, career coaching, recruitment tools, and professional skill development",
+      "example_keywords": [
+        "job search",
+        "resume",
+        "interview prep",
+        "career guidance",
+        "recruitment",
+        "professional development"
+      ]
+    },
+    {
+      "name": "Document Processing & Management",
+      "description": "Document analysis, OCR, PDF processing, form filling, text extraction, information organization, and document workflow automation",
+      "example_keywords": [
+        "OCR",
+        "PDF analysis",
+        "document scanning",
+        "text extraction",
+        "form filling",
+        "document automation"
+      ]
+    },
+    {
+      "name": "Language & Translation",
+      "description": "Language learning, translation services, multilingual communication, pronunciation training, and linguistic education tools",
+      "example_keywords": [
+        "translation",
+        "language learning",
+        "multilingual",
+        "pronunciation",
+        "linguistic",
+        "communication"
+      ]
+    },
+    {
+      "name": "Legal & Compliance",
+      "description": "Legal document analysis, contract review, compliance checking, regulatory guidance, risk assessment, and legal assistance tools",
+      "example_keywords": [
+        "contract analysis",
+        "legal assistance",
+        "compliance",
+        "regulatory",
+        "legal documents",
+        "risk assessment"
+      ]
+    },
+    {
+      "name": "Agriculture & Farming",
+      "description": "Crop management, disease detection, soil analysis, farming guidance, agricultural optimization, and rural technology solutions",
+      "example_keywords": [
+        "crop management",
+        "farming",
+        "agriculture",
+        "plant disease",
+        "soil analysis",
+        "agricultural intelligence"
+      ]
+    },
+    {
+      "name": "Design & Architecture",
+      "description": "UI/UX design, 3D modeling, architectural planning, interior design, CAD tools, visual design automation, and spatial planning",
+      "example_keywords": [
+        "3D modeling",
+        "UI/UX",
+        "architectural design",
+        "interior design",
+        "CAD",
+        "visual design"
+      ]
+    },
+    {
+      "name": "Research & Scientific Tools",
+      "description": "Research assistance, scientific analysis, academic paper processing, hypothesis generation, laboratory tools, and data analysis",
+      "example_keywords": [
+        "research",
+        "scientific analysis",
+        "academic",
+        "paper review",
+        "laboratory",
+        "hypothesis"
+      ]
+    },
+    {
+      "name": "Productivity & Task Management",
+      "description": "Task organization, workflow automation, time management, scheduling, personal productivity enhancement, and project planning",
+      "example_keywords": [
+        "task management",
+        "productivity",
+        "workflow",
+        "scheduling",
+        "time tracking",
+        "organization"
+      ]
+    },
+    {
+      "name": "Safety & Security",
+      "description": "Cybersecurity, fraud detection, threat analysis, security monitoring, phishing prevention, and risk assessment systems",
+      "example_keywords": [
+        "cybersecurity",
+        "fraud detection",
+        "threat detection",
+        "security monitoring",
+        "phishing",
+        "risk prevention"
+      ]
+    },
+    {
+      "name": "E-commerce & Retail",
+      "description": "Shopping assistance, product recommendations, inventory management, marketplace platforms, retail optimization, and consumer tools",
+      "example_keywords": [
+        "shopping",
+        "e-commerce",
+        "product recommendations",
+        "inventory",
+        "retail",
+        "marketplace"
+      ]
+    },
+    {
+      "name": "Travel & Navigation",
+      "description": "Travel planning, itinerary generation, navigation assistance, route optimization, tourism guidance, and location-based services",
+      "example_keywords": [
+        "travel planning",
+        "navigation",
+        "itinerary",
+        "tourism",
+        "route optimization",
+        "location services"
+      ]
+    },
+    {
+      "name": "Food & Culinary",
+      "description": "Recipe generation, meal planning, nutrition tracking, cooking assistance, food safety, and dietary management applications",
+      "example_keywords": [
+        "recipe",
+        "meal planning",
+        "cooking",
+        "food analysis",
+        "dietary",
+        "culinary"
+      ]
+    },
+    {
+      "name": "Gaming & Entertainment",
+      "description": "Game development, interactive entertainment, gamification, simulations, esports platforms, and recreational applications",
+      "example_keywords": [
+        "gaming",
+        "interactive entertainment",
+        "gamification",
+        "simulation",
+        "esports",
+        "game development"
+      ]
+    },
+    {
+      "name": "Environmental & Sustainability",
+      "description": "Environmental monitoring, climate analysis, sustainability tracking, waste management, recycling guidance, and ecological conservation",
+      "example_keywords": [
+        "environmental",
+        "sustainability",
+        "climate",
+        "recycling",
+        "waste management",
+        "conservation"
+      ]
+    },
+    {
+      "name": "Emergency & Crisis Management",
+      "description": "Emergency response, disaster management, crisis coordination, safety monitoring, rescue operations, and urgent assistance systems",
+      "example_keywords": [
+        "emergency",
+        "disaster response",
+        "crisis management",
+        "rescue",
+        "safety monitoring",
+        "urgent care"
+      ]
+    },
+    {
+      "name": "Smart Home & IoT",
+      "description": "Home automation, IoT devices, smart device management, energy management, appliance control, and connected home solutions",
+      "example_keywords": [
+        "smart home",
+        "IoT",
+        "home automation",
+        "device control",
+        "connected devices",
+        "energy management"
+      ]
+    },
+    {
+      "name": "Communication & Collaboration",
+      "description": "Team collaboration, messaging tools, meeting assistance, transcription, video conferencing, and communication enhancement platforms",
+      "example_keywords": [
+        "collaboration",
+        "messaging",
+        "meeting assistant",
+        "transcription",
+        "team communication",
+        "video conferencing"
+      ]
+    },
+    {
+      "name": "Real Estate & Property",
+      "description": "Property management, real estate analysis, home valuation, construction planning, building safety, and housing solutions",
+      "example_keywords": [
+        "real estate",
+        "property management",
+        "home valuation",
+        "construction",
+        "housing",
+        "building"
+      ]
+    },
+    {
+      "name": "Transportation & Logistics",
+      "description": "Fleet management, route optimization, traffic management, delivery coordination, logistics planning, and mobility solutions",
+      "example_keywords": [
+        "logistics",
+        "fleet management",
+        "route optimization",
+        "transportation",
+        "delivery",
+        "traffic"
+      ]
+    },
+    {
+      "name": "Computer Vision & Image Processing",
+      "description": "Image recognition, object detection, visual analysis, OCR, image enhancement, and multimodal visual intelligence applications",
+      "example_keywords": [
+        "image recognition",
+        "object detection",
+        "computer vision",
+        "visual analysis",
+        "image processing",
+        "OCR"
+      ]
+    },
+    {
+      "name": "Infrastructure & Cloud Systems",
+      "description": "Cloud architecture, infrastructure management, DevOps automation, system monitoring, IaC generation, and technical operations",
+      "example_keywords": [
+        "cloud",
+        "infrastructure",
+        "DevOps",
+        "system architecture",
+        "IaC",
+        "monitoring"
+      ]
+    }
+  ]
+}
