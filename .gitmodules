@@ -1,3 +1,6 @@
 [submodule "kaggle-gemini3-writeups-explorer"]
 	path = kaggle-gemini3-writeups-explorer
 	url = git@github.com:yunpiao/kaggle-gemini3-writeups-explorer.git
+[submodule "prometheus-to-grafana-ai"]
+	path = prometheus-to-grafana-ai
+	url = git@github.com:yunpiao/Grafana-Dashboard-Generator-Gemini.git
