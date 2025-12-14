@@ -1,0 +1,3 @@
+[submodule "kaggle-gemini3-writeups-explorer"]
+	path = kaggle-gemini3-writeups-explorer
+	url = git@github.com:yunpiao/kaggle-gemini3-writeups-explorer.git
