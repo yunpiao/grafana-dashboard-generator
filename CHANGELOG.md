@@ -1,5 +1,25 @@
 # 更新日志 (Changelog)
 
+## 🎯 v1.2.0 - 项目重构与子模块整合 (2025-12-14)
+
+### 🔧 项目结构优化
+
+- **子模块整合**：
+  - 添加 `kaggle-gemini3-writeups-explorer` 子模块 - Kaggle Writeups 浏览器 (Streamlit)
+  - 添加 `prometheus-to-grafana-ai` 子模块 - Grafana Dashboard 生成器 (Gemini版)
+
+- **文件清理**：
+  - 移除冗余的本地数据目录
+  - 清理旧版脚本文件
+  - 统一数据存储到子模块中
+
+- **文档更新**：
+  - 更新 README.md 和 README-zh.md
+  - 修正 GitHub 用户名链接
+  - 更新项目架构图
+
+---
+
 ## 🎯 v1.1.8 - API 配置管理功能 (2025-10-30)
 
 ### ✨ 新功能

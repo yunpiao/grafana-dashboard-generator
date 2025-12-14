@@ -12,15 +12,21 @@
 
 ### 目录结构
 ```
-├── frontend/          # 静态前端文件
-├── backend/src/       # 后端逻辑（本地 + 共享库）
-│   ├── llmService.js      # LLM 调用（fetch-based，edge 友好）
-│   ├── metricsParser.js   # Prometheus metrics 解析
+grafana-dashboard-generator/
+├── frontend/              # 静态前端文件
+├── backend/src/           # 后端逻辑（本地 + 共享库）
+│   ├── llmService.js          # LLM 调用（fetch-based，edge 友好）
+│   ├── metricsParser.js       # Prometheus metrics 解析
 │   ├── dashboardGenerator.js  # Dashboard 生成逻辑
-│   └── prompts.js         # LLM prompts
-├── functions/         # Cloudflare Pages Functions
-│   └── api/               # API 端点
-└── .github/workflows/ # CI/CD
+│   └── prompts.js             # LLM prompts
+├── functions/             # Cloudflare Pages Functions
+│   └── api/                   # API 端点
+├── scripts/               # 工具脚本
+├── docs/                  # 文档
+├── .github/workflows/     # CI/CD
+└── 子模块/
+    ├── kaggle-gemini3-writeups-explorer/  # Kaggle Writeups 浏览器 (Streamlit)
+    └── prometheus-to-grafana-ai/          # Grafana Dashboard 生成器 (Gemini版)
 ```
 
 ### 关键 API

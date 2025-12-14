@@ -1,9 +1,8 @@
 # Metrics to Grafana Dashboard Generator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker Pulls](https://img.shields.io/docker/pulls/yourusername/grafana-dashboard-backend)](https://hub.docker.com/r/yourusername/grafana-dashboard-backend)
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/grafana-dashboard-generator)](https://github.com/yourusername/grafana-dashboard-generator/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/yourusername/grafana-dashboard-generator)](https://github.com/yourusername/grafana-dashboard-generator/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/yunpiao/grafana-dashboard-generator)](https://github.com/yunpiao/grafana-dashboard-generator/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/yunpiao/grafana-dashboard-generator)](https://github.com/yunpiao/grafana-dashboard-generator/issues)
 
 Automatically generate beautiful Grafana dashboards from your Prometheus metrics using AI.
 
@@ -37,18 +36,23 @@ This tool analyzes Prometheus metrics text and uses OpenAI's GPT-4 to automatica
 ## Architecture
 
 ```
-/grafana
-  /backend          - Node.js + Express API server
-    /src
-      - server.js           - Express server and API endpoints
-      - metricsParser.js    - Parses Prometheus metrics text
-      - llmService.js       - OpenAI API integration
-      - dashboardGenerator.js - Dashboard generation orchestration
-      - prompts.js          - LLM prompt templates
-  /frontend         - Static HTML/CSS/JS web interface
-    - index.html
-    - app.js
-    - style.css
+grafana-dashboard-generator/
+├── backend/                 # Node.js + Express API server
+│   └── src/
+│       ├── server.js              # Express server and API endpoints
+│       ├── metricsParser.js       # Parses Prometheus metrics text
+│       ├── llmService.js          # OpenAI API integration
+│       ├── dashboardGenerator.js  # Dashboard generation orchestration
+│       └── prompts.js             # LLM prompt templates
+├── frontend/                # Static HTML/CSS/JS web interface
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
+├── scripts/                 # Utility scripts
+├── docs/                    # Documentation
+└── submodules/
+    ├── kaggle-gemini3-writeups-explorer/  # Kaggle Writeups Explorer (Streamlit)
+    └── prometheus-to-grafana-ai/          # Alternative Grafana Dashboard Generator
 ```
 
 ## 🚀 Quick Start
@@ -58,7 +62,7 @@ Choose your preferred deployment method:
 ### Docker Compose (Recommended)
 
 ```bash
-git clone https://github.com/yourusername/grafana-dashboard-generator.git
+git clone https://github.com/yunpiao/grafana-dashboard-generator.git
 cd grafana-dashboard-generator
 echo "OPENAI_API_KEY=sk-your-key" > .env
 docker-compose up -d
@@ -71,7 +75,7 @@ Access at `http://localhost`
 ```bash
 docker run -d -p 3000:3000 \
   -e OPENAI_API_KEY=sk-your-key \
-  yourusername/grafana-dashboard-backend:latest
+  yunpiao/grafana-dashboard-backend:latest
 ```
 
 ### From Source
@@ -370,15 +374,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📬 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/grafana-dashboard-generator/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/grafana-dashboard-generator/discussions)
+- **Issues**: [GitHub Issues](https://github.com/yunpiao/grafana-dashboard-generator/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yunpiao/grafana-dashboard-generator/discussions)
 - **Security**: See [SECURITY.md](SECURITY.md)
 
 ## ⭐ Star History
 
 If you find this project useful, please consider giving it a star!
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/grafana-dashboard-generator&type=Date)](https://star-history.com/#yourusername/grafana-dashboard-generator&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=yunpiao/grafana-dashboard-generator&type=Date)](https://star-history.com/#yunpiao/grafana-dashboard-generator&Date)
 
 ---
 

@@ -99,30 +99,23 @@ AI 生成（逐个创建）
 ## 📦 项目结构
 
 ```
-/grafana
+grafana-dashboard-generator/
 ├── backend/                    # Node.js 后端
-│   ├── src/
-│   │   ├── server.js          # Express 服务器
-│   │   ├── metricsParser.js   # Metrics 解析
-│   │   ├── llmService.js      # LLM API 调用
-│   │   ├── prompts.js         # AI Prompts
-│   │   └── dashboardGenerator.js  # 仪表盘生成
-│   ├── package.json
-│   └── test-parser.js
-│
+│   └── src/
+│       ├── server.js              # Express 服务器
+│       ├── metricsParser.js       # Metrics 解析
+│       ├── llmService.js          # LLM API 调用
+│       ├── prompts.js             # AI Prompts
+│       └── dashboardGenerator.js  # 仪表盘生成
 ├── frontend/                   # Web 界面
 │   ├── index.html
 │   ├── app.js
 │   └── style.css
-│
-├── test-metrics-example.txt   # 示例数据
-│
-└── 文档/
-    ├── 快速开始-MiniMax版.md  ← 从这里开始！
-    ├── MINIMAX_GUIDE.md
-    ├── 快速开始.md
-    ├── README.md
-    └── ...
+├── scripts/                    # 工具脚本
+├── docs/                       # 文档
+└── 子模块/
+    ├── kaggle-gemini3-writeups-explorer/  # Kaggle Writeups 浏览器 (Streamlit)
+    └── prometheus-to-grafana-ai/          # Grafana Dashboard 生成器 (Gemini版)
 ```
 
 ## 🎨 支持的 LLM 提供商
