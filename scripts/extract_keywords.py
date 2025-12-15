@@ -9,10 +9,12 @@ import json
 import time
 from tqdm import tqdm
 
-# API 配置
-API_BASE = "https://newapi.yunpiao.site/v1"
-API_KEY = "***REDACTED_API_KEY***"
-MODEL = "claude-sonnet-4-5-20250929"
+import os
+
+# API 配置 (从环境变量读取)
+API_BASE = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
+API_KEY = os.environ.get("OPENAI_API_KEY", "")
+MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
 # 文件配置
 INPUT_CSV = "kaggle_writeups_export/writeups_classified.csv"
