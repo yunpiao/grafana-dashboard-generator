@@ -1,0 +1,41 @@
+#!/bin/bash
+# Pre-commit hook to detect potential secrets
+
+# Patterns to detect
+PATTERNS=(
+    'sk-[a-zA-Z0-9]{20,}'           # OpenAI-style API keys
+    'AKIA[0-9A-Z]{16}'              # AWS Access Key ID
+    'ghp_[a-zA-Z0-9]{36}'           # GitHub Personal Access Token
+    'gho_[a-zA-Z0-9]{36}'           # GitHub OAuth Token
+    'password\s*=\s*["\x27][^"\x27]+'  # Hardcoded passwords
+    'api[_-]?key\s*=\s*["\x27][^"\x27]{10,}'  # Generic API keys
+)
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+FOUND_SECRETS=0
+
+for pattern in "${PATTERNS[@]}"; do
+    MATCHES=$(echo "$STAGED_FILES" | xargs grep -lE "$pattern" 2>/dev/null || true)
+    if [ -n "$MATCHES" ]; then
+        echo "⚠️  Potential secret detected (pattern: $pattern):"
+        echo "$MATCHES" | while read file; do
+            echo "   - $file"
+            grep -nE "$pattern" "$file" 2>/dev/null | head -3
+        done
+        FOUND_SECRETS=1
+    fi
+done
+
+if [ $FOUND_SECRETS -eq 1 ]; then
+    echo ""
+    echo "❌ Commit blocked. Remove secrets before committing."
+    echo "   Use environment variables instead of hardcoding."
+    exit 1
+fi
+
+exit 0
