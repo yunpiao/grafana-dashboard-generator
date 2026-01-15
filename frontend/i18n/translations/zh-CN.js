@@ -3,7 +3,38 @@ export default {
         title: "Prometheus Metrics 转 Grafana 仪表板",
         subtitle: "使用 AI 自动从 Prometheus Metrics 生成精美的 Grafana 仪表板"
     },
-    
+
+    stepIndicator: {
+        step1: "粘贴指标",
+        step2: "配置 LLM",
+        step3: "审查指标",
+        step4: "选择面板",
+        step5: "下载"
+    },
+
+    landing: {
+        heroSubtitle: "使用 AI 自动化技术，在几秒钟内将 Prometheus Metrics 转换为精美、直观的 Grafana 仪表板",
+        tryNow: "立即体验",
+        painPointsTitle: "厌倦了手动创建仪表板？",
+        painPointsSubtitle: "从零开始创建 Grafana 仪表板既耗时又容易出错",
+        painPoint1Title: "数小时的手动工作",
+        painPoint1Desc: "为每个仪表板编写 PromQL 查询和配置面板需要数小时的繁琐工作",
+        painPoint2Title: "复杂的 PromQL 语法",
+        painPoint2Desc: "PromQL 学习曲线陡峭，难以编写高效的查询",
+        painPoint3Title: "不一致的仪表板",
+        painPoint3Desc: "手动创建导致布局不一致，容易遗漏重要指标",
+        howItWorksTitle: "工作原理",
+        howItWorksSubtitle: "三个简单步骤生成完美仪表板",
+        step1Title: "粘贴您的 Metrics",
+        step1Desc: "从 /metrics 端点复制指标数据并粘贴到工具中",
+        step2Title: "AI 分析",
+        step2Desc: "AI 分析您的指标并规划最佳面板配置",
+        step3Title: "下载并导入",
+        step3Desc: "下载生成的 JSON 并直接导入 Grafana",
+        ctaTitle: "准备好节省数小时的工作了吗？",
+        ctaSubtitle: "一分钟内生成您的第一个仪表板"
+    },
+
     steps: {
         step1: {
             title: "步骤 1：粘贴您的 Metrics",

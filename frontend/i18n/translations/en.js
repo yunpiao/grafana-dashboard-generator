@@ -3,7 +3,38 @@ export default {
         title: "Metrics to Grafana Dashboard",
         subtitle: "Automatically generate beautiful Grafana dashboards from your Prometheus metrics using AI"
     },
-    
+
+    stepIndicator: {
+        step1: "Paste Metrics",
+        step2: "Configure LLM",
+        step3: "Review Metrics",
+        step4: "Select Panels",
+        step5: "Download"
+    },
+
+    landing: {
+        heroSubtitle: "Transform your Prometheus metrics into beautiful, insightful Grafana dashboards in seconds with AI-powered automation",
+        tryNow: "Try it Now",
+        painPointsTitle: "Tired of Manual Dashboard Creation?",
+        painPointsSubtitle: "Creating Grafana dashboards from scratch is time-consuming and error-prone",
+        painPoint1Title: "Hours of Manual Work",
+        painPoint1Desc: "Writing PromQL queries and configuring panels takes hours of tedious work for each dashboard",
+        painPoint2Title: "Complex PromQL Syntax",
+        painPoint2Desc: "PromQL has a steep learning curve, making it hard to write efficient queries",
+        painPoint3Title: "Inconsistent Dashboards",
+        painPoint3Desc: "Manual creation leads to inconsistent layouts and missing important metrics",
+        howItWorksTitle: "How It Works",
+        howItWorksSubtitle: "Three simple steps to generate your perfect dashboard",
+        step1Title: "Paste Your Metrics",
+        step1Desc: "Copy metrics from your /metrics endpoint and paste them into the tool",
+        step2Title: "AI Analysis",
+        step2Desc: "Our AI analyzes your metrics and plans optimal panel configurations",
+        step3Title: "Download & Import",
+        step3Desc: "Download the generated JSON and import directly into Grafana",
+        ctaTitle: "Ready to Save Hours of Work?",
+        ctaSubtitle: "Generate your first dashboard in under a minute"
+    },
+
     steps: {
         step1: {
             title: "Step 1: Paste Your Metrics",
@@ -54,15 +85,21 @@ export default {
     
     labels: {
         apiKey: "API Key:",
+        apiKeyShort: "API Key:",
         apiBaseURL: "API Base URL:",
+        baseURLShort: "Base URL:",
         modelName: "Model Name:",
+        modelShort: "Model:",
         optional: "(optional)",
         savedConfig: "Saved Configuration:",
         enterManually: "-- Enter Manually --",
         configName: "Configuration Name",
         metricsDetected: "metrics detected",
         panelsSelected: "panels selected",
-        of: "of"
+        of: "of",
+        notSet: "(not set)",
+        editConfiguration: "Edit configuration",
+        deleteConfiguration: "Delete configuration"
     },
     
     placeholders: {
@@ -104,9 +141,11 @@ Paste your Prometheus metrics here`
         commonLabels: "Common Labels",
         metricTypesTitle: "Metric Types",
         labels: "Labels:",
+        labelsTitle: "Labels:",
         type: "Type:",
         useMetrics: "Use Metrics:",
-        queryHints: "Query Hints:"
+        queryHints: "Query Hints:",
+        samples: "samples"
     },
     
     modals: {

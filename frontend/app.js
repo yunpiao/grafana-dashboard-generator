@@ -9,9 +9,11 @@ let currentApiConfig = null; // Store API config for Stage 2
 let parsedMetricsInfo = null; // Store parsed metrics for preview
 let apiConfigs = []; // Store all saved API configurations
 let currentConfigIndex = -1; // Currently selected config index
+let currentStep = 1; // Current workflow step (1-5)
 
 // Configuration Management
 const CONFIG_STORAGE_KEY = 'grafana_dashboard_api_configs';
+const LANDING_PAGE_DISMISSED_KEY = 'grafana_dashboard_landing_dismissed';
 
 // Load configurations from localStorage
 function loadConfigs() {
@@ -135,6 +137,7 @@ const jsonPreview = document.getElementById('jsonPreview');
 const jsonContent = document.getElementById('jsonContent');
 const progressTitle = document.getElementById('progressTitle');
 const progressMessage = document.getElementById('progressMessage');
+const terminalLogs = document.getElementById('terminalLogs');
 const errorMessage = document.getElementById('errorMessage');
 const panelsPlanned = document.getElementById('panelsPlanned');
 const panelsCreated = document.getElementById('panelsCreated');
@@ -172,8 +175,48 @@ const editConfigModelName = document.getElementById('editConfigModelName');
 const saveEditConfigBtn = document.getElementById('saveEditConfigBtn');
 const cancelEditConfigBtn = document.getElementById('cancelEditConfigBtn');
 const languageSelector = document.getElementById('languageSelector');
+const landingPage = document.getElementById('landingPage');
+const mainApp = document.getElementById('mainApp');
+const heroTryNowBtn = document.getElementById('heroTryNowBtn');
+const ctaTryNowBtn = document.getElementById('ctaTryNowBtn');
 
 let editingConfigId = null; // Track which config is being edited
+
+// Step Indicator Management
+function updateStepIndicator(step) {
+    currentStep = step;
+    const activeLine = document.getElementById('stepActiveLine');
+    const stepDots = document.querySelectorAll('.step-dot');
+
+    // Calculate active line width: step 1=0%, step 2=25%, step 3=50%, step 4=75%, step 5=100%
+    const lineWidths = { 1: 0, 2: 25, 3: 50, 4: 75, 5: 100 };
+    const lineWidth = lineWidths[step] || 0;
+
+    if (activeLine) {
+        activeLine.style.width = `${lineWidth}%`;
+    }
+
+    // Update step dots appearance
+    stepDots.forEach(dot => {
+        const dotStep = parseInt(dot.dataset.step);
+        const circle = dot.querySelector('div');
+        const label = dot.querySelector('span');
+
+        if (dotStep < step) {
+            // Completed steps
+            circle.className = 'w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold shadow-md transition-all duration-300';
+            label.className = 'text-xs mt-1.5 text-slate-600 font-medium whitespace-nowrap';
+        } else if (dotStep === step) {
+            // Current step
+            circle.className = 'w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold shadow-md ring-4 ring-blue-200 transition-all duration-300';
+            label.className = 'text-xs mt-1.5 text-blue-600 font-semibold whitespace-nowrap';
+        } else {
+            // Future steps
+            circle.className = 'w-8 h-8 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-semibold transition-all duration-300';
+            label.className = 'text-xs mt-1.5 text-slate-400 font-medium whitespace-nowrap';
+        }
+    });
+}
 
 // Event listeners
 metricsInput.addEventListener('input', handleMetricsInput);
@@ -197,6 +240,40 @@ closeEditModalBtn.addEventListener('click', closeEditConfigModal);
 saveEditConfigBtn.addEventListener('click', handleSaveEditConfig);
 cancelEditConfigBtn.addEventListener('click', closeEditConfigModal);
 languageSelector.addEventListener('change', handleLanguageChange);
+heroTryNowBtn.addEventListener('click', handleTryNow);
+ctaTryNowBtn.addEventListener('click', handleTryNow);
+
+// Landing Page Functions
+function handleTryNow() {
+    // Hide landing page, show main app
+    landingPage.style.display = 'none';
+    mainApp.style.display = 'block';
+
+    // Save preference to localStorage
+    localStorage.setItem(LANDING_PAGE_DISMISSED_KEY, 'true');
+
+    // Re-initialize Lucide icons for main app
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+function checkLandingPagePreference() {
+    const dismissed = localStorage.getItem(LANDING_PAGE_DISMISSED_KEY);
+
+    if (dismissed === 'true') {
+        // User has already seen landing page, go directly to app
+        landingPage.style.display = 'none';
+        mainApp.style.display = 'block';
+    } else {
+        // Show landing page
+        landingPage.style.display = 'block';
+        mainApp.style.display = 'none';
+    }
+}
 
 // Handle metrics input
 function handleMetricsInput() {
@@ -350,6 +427,9 @@ function handleGenerate() {
         // Show parsed metrics info
         showMetricsInfo(parsedMetricsInfo);
 
+        // Update step indicator to step 2 (Configure LLM)
+        updateStepIndicator(2);
+
     } catch (error) {
         console.error('Parse error:', error);
         showError(t('messages.parseError'));
@@ -387,7 +467,7 @@ function showMetricsInfo(info) {
                     </span>
                 ` : ''}
                 <span class="metric-stats-inline">
-                    📊 ${metric.sampleCount} ${t('sections.samples')}
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 inline-block"></i> ${metric.sampleCount} ${t('sections.samples')}
                 </span>
             </div>
         `;
@@ -427,18 +507,23 @@ function showMetricsInfo(info) {
     // Show metrics info section
     metricsInfoSection.style.display = 'block';
     metricsInfoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Re-initialize Lucide icons for dynamic content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 // Get icon for metric type
 function getMetricTypeIcon(type) {
     const icons = {
-        'counter': '🔢',
-        'gauge': '⏲️',
-        'histogram': '📊',
-        'summary': '📈',
-        'untyped': '❓'
+        'counter': '<i data-lucide="hash" class="w-4 h-4 inline-block"></i>',
+        'gauge': '<i data-lucide="gauge" class="w-4 h-4 inline-block"></i>',
+        'histogram': '<i data-lucide="bar-chart-3" class="w-4 h-4 inline-block"></i>',
+        'summary': '<i data-lucide="trending-up" class="w-4 h-4 inline-block"></i>',
+        'untyped': '<i data-lucide="help-circle" class="w-4 h-4 inline-block"></i>'
     };
-    return icons[type] || '📊';
+    return icons[type] || '<i data-lucide="bar-chart-3" class="w-4 h-4 inline-block"></i>';
 }
 
 // Handle proceed to AI analysis (Step 2: Call backend)
@@ -447,6 +532,9 @@ async function handleProceedToAnalysis() {
     metricsInfoSection.style.display = 'none';
     showProgress(t('progress.analyzingAI'), t('progress.analyzingAIMessage'));
     proceedToAnalysisBtn.disabled = true;
+
+    // Update step indicator to step 3 (Review Metrics)
+    updateStepIndicator(3);
 
     try {
         // Prepare API request
@@ -474,12 +562,14 @@ async function handleProceedToAnalysis() {
         }
 
         // Success! Store results and show panel plans
+        stopTerminalLogs(true);
         currentPanelPlans = data.panelPlans;
         currentMetricsSummary = data.metricsSummary;
         showPanelPlansWithSelection(data.panelPlans);
 
     } catch (error) {
         console.error('Analysis error:', error);
+        stopTerminalLogs(false);
         showError(error.message || t('messages.errorOccurred'));
         // Show metrics info again so user can retry
         metricsInfoSection.style.display = 'block';
@@ -494,6 +584,9 @@ function handleBackToEdit() {
     metricsInfoSection.style.display = 'none';
     parsedMetricsInfo = null;
     currentApiConfig = null;
+
+    // Reset step indicator to step 1 (Paste Metrics)
+    updateStepIndicator(1);
 }
 
 // Handle generate selected panels (Stage 2)
@@ -512,7 +605,7 @@ async function handleGenerateSelected() {
 
     // Hide panel plans and show progress
     panelPlansSection.style.display = 'none';
-    showProgress(t('progress.generating'), t('progress.generatingMessage').replace('{count}', totalSelected));
+    showProgressForGeneration(t('progress.generating'), t('progress.generatingMessage').replace('{count}', totalSelected));
     generateSelectedBtn.disabled = true;
 
     try {
@@ -538,11 +631,13 @@ async function handleGenerateSelected() {
         }
 
         // Success!
+        stopTerminalLogs(true);
         generatedDashboard = data.dashboard;
         showResult(data, selectedPlans);
 
     } catch (error) {
         console.error('Panel generation error:', error);
+        stopTerminalLogs(false);
         showError(error.message || t('messages.errorOccurred'));
         // Show panel plans again so user can retry
         panelPlansSection.style.display = 'block';
@@ -558,19 +653,175 @@ function showProgress(title, message) {
     progressMessage.textContent = message;
     progressSection.style.display = 'block';
 
-    // Update message after some time
-    setTimeout(() => {
-        if (progressSection.style.display !== 'none') {
-            progressMessage.textContent = t('progress.generatingLonger');
+    // Clear previous logs and start terminal animation
+    clearTerminalLogs();
+    startTerminalLogs(false);
+
+    // Re-initialize Lucide icons for the terminal icon
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Show progress indicator for panel generation (uses different log messages)
+function showProgressForGeneration(title, message) {
+    progressTitle.textContent = title;
+    progressMessage.textContent = message;
+    progressSection.style.display = 'block';
+
+    // Clear previous logs and start terminal animation with generation messages
+    clearTerminalLogs();
+    startTerminalLogs(true);
+
+    // Re-initialize Lucide icons for the terminal icon
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Terminal log animation state
+let terminalLogInterval = null;
+let terminalLogIndex = 0;
+
+// Terminal log messages for different stages
+const analysisLogMessages = [
+    { text: 'Initializing metrics parser...', type: 'info' },
+    { text: 'Parsing Prometheus metrics format...', type: 'info' },
+    { text: 'Extracting metric names and labels...', type: 'info' },
+    { text: 'Identifying metric types (counter, gauge, histogram)...', type: 'info' },
+    { text: 'Analyzing label cardinality...', type: 'info' },
+    { text: 'Grouping related metrics...', type: 'info' },
+    { text: 'Connecting to AI service...', type: 'info' },
+    { text: 'Sending metrics summary to LLM...', type: 'info' },
+    { text: 'AI analyzing metric patterns...', type: 'processing' },
+    { text: 'Determining optimal visualizations...', type: 'processing' },
+    { text: 'Planning dashboard layout...', type: 'processing' },
+    { text: 'Generating panel recommendations...', type: 'processing' },
+    { text: 'Optimizing PromQL queries...', type: 'processing' },
+    { text: 'Validating panel configurations...', type: 'info' },
+    { text: 'Finalizing analysis results...', type: 'success' },
+];
+
+const generationLogMessages = [
+    { text: 'Starting panel generation...', type: 'info' },
+    { text: 'Loading selected panel plans...', type: 'info' },
+    { text: 'Initializing Grafana dashboard template...', type: 'info' },
+    { text: 'Connecting to AI service...', type: 'info' },
+    { text: 'Generating PromQL expressions...', type: 'processing' },
+    { text: 'Building panel configurations...', type: 'processing' },
+    { text: 'Setting up visualization options...', type: 'processing' },
+    { text: 'Configuring thresholds and colors...', type: 'processing' },
+    { text: 'Arranging panel grid positions...', type: 'processing' },
+    { text: 'Creating row groupings...', type: 'info' },
+    { text: 'Applying dashboard variables...', type: 'info' },
+    { text: 'Validating JSON structure...', type: 'info' },
+    { text: 'Optimizing dashboard performance...', type: 'info' },
+    { text: 'Finalizing dashboard JSON...', type: 'success' },
+];
+
+// Clear terminal logs
+function clearTerminalLogs() {
+    if (terminalLogs) {
+        terminalLogs.innerHTML = '';
+    }
+    terminalLogIndex = 0;
+    if (terminalLogInterval) {
+        clearInterval(terminalLogInterval);
+        terminalLogInterval = null;
+    }
+}
+
+// Add a single log entry to terminal
+function addTerminalLog(message, type = 'info') {
+    if (!terminalLogs) return;
+
+    const timestamp = new Date().toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+
+    const logEntry = document.createElement('div');
+    logEntry.className = 'flex items-start gap-2 animate-fade-in';
+
+    // Color based on type
+    let textColor = 'text-slate-400';
+    let prefix = '$';
+    if (type === 'success') {
+        textColor = 'text-green-400';
+        prefix = '+';
+    } else if (type === 'error') {
+        textColor = 'text-red-400';
+        prefix = '!';
+    } else if (type === 'processing') {
+        textColor = 'text-blue-400';
+        prefix = '>';
+    }
+
+    logEntry.innerHTML = `
+        <span class="text-slate-600 select-none">[${timestamp}]</span>
+        <span class="${textColor} select-none">${prefix}</span>
+        <span class="${textColor}">${message}</span>
+    `;
+
+    terminalLogs.appendChild(logEntry);
+    terminalLogs.scrollTop = terminalLogs.scrollHeight;
+}
+
+// Start terminal log animation
+function startTerminalLogs(isGeneration = false) {
+    const messages = isGeneration ? generationLogMessages : analysisLogMessages;
+    terminalLogIndex = 0;
+
+    // Add first log immediately
+    if (messages.length > 0) {
+        addTerminalLog(messages[0].text, messages[0].type);
+        terminalLogIndex = 1;
+    }
+
+    // Add subsequent logs with random delays
+    terminalLogInterval = setInterval(() => {
+        if (terminalLogIndex < messages.length) {
+            const msg = messages[terminalLogIndex];
+            addTerminalLog(msg.text, msg.type);
+            terminalLogIndex++;
+        } else {
+            // Loop back with "Still processing..." messages
+            const waitMessages = [
+                { text: 'Still processing, please wait...', type: 'processing' },
+                { text: 'AI is thinking...', type: 'processing' },
+                { text: 'Almost there...', type: 'processing' },
+                { text: 'Generating content...', type: 'processing' },
+            ];
+            const randomMsg = waitMessages[Math.floor(Math.random() * waitMessages.length)];
+            addTerminalLog(randomMsg.text, randomMsg.type);
         }
-    }, 10000);
+    }, 1500 + Math.random() * 1000); // Random delay between 1.5-2.5 seconds
+}
+
+// Stop terminal logs
+function stopTerminalLogs(success = true) {
+    if (terminalLogInterval) {
+        clearInterval(terminalLogInterval);
+        terminalLogInterval = null;
+    }
+
+    if (success) {
+        addTerminalLog('Operation completed successfully!', 'success');
+    } else {
+        addTerminalLog('Operation failed. Please check the error message.', 'error');
+    }
 }
 
 // Show panel plans with checkboxes for selection
 // Supports both new { rows: [...] } format and legacy array format
 function showPanelPlansWithSelection(panelPlans) {
     if (!panelPlans) return;
-    
+
+    // Update step indicator to step 4 (Select Panels)
+    updateStepIndicator(4);
+
     panelPlansList.innerHTML = '';
     
     // Normalize to rows format
@@ -693,6 +944,11 @@ function showPanelPlansWithSelection(panelPlans) {
     updateSelectionCount();
     panelPlansSection.style.display = 'block';
     panelPlansSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Re-initialize Lucide icons for dynamic content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 // Toggle all panels in a row
@@ -898,19 +1154,22 @@ function handleCancelGeneration() {
 // Get visualization icon
 function getVisualizationIcon(type) {
     const icons = {
-        'timeseries': '📈',
-        'stat': '🔢',
-        'gauge': '⏲️',
-        'table': '📊',
-        'bar': '📊',
-        'heatmap': '🔥',
-        'graph': '📉'
+        'timeseries': '<i data-lucide="trending-up" class="w-4 h-4 inline-block"></i>',
+        'stat': '<i data-lucide="hash" class="w-4 h-4 inline-block"></i>',
+        'gauge': '<i data-lucide="gauge" class="w-4 h-4 inline-block"></i>',
+        'table': '<i data-lucide="table" class="w-4 h-4 inline-block"></i>',
+        'bar': '<i data-lucide="bar-chart-3" class="w-4 h-4 inline-block"></i>',
+        'heatmap': '<i data-lucide="flame" class="w-4 h-4 inline-block"></i>',
+        'graph': '<i data-lucide="line-chart" class="w-4 h-4 inline-block"></i>'
     };
-    return icons[type] || '📊';
+    return icons[type] || '<i data-lucide="bar-chart-3" class="w-4 h-4 inline-block"></i>';
 }
 
 // Show result
 function showResult(data, selectedPlans = null) {
+    // Update step indicator to step 5 (Download)
+    updateStepIndicator(5);
+
     // Calculate planned panels count from Row format or legacy
     let plannedCount = data.metadata.totalPanelsPlanned || data.metadata.panelsCount;
     if (selectedPlans && selectedPlans.rows) {
@@ -936,7 +1195,7 @@ function showResult(data, selectedPlans = null) {
         const warningDiv = document.createElement('div');
         warningDiv.className = 'warning-message';
         warningDiv.innerHTML = `
-            <strong>⚠️ ${t('messages.warningPanelsFailed').replace('{count}', data.metadata.failedPanels)}</strong>
+            <strong><i data-lucide="alert-triangle" class="w-4 h-4 inline-block"></i> ${t('messages.warningPanelsFailed').replace('{count}', data.metadata.failedPanels)}</strong>
             ${t('messages.warningPanelsSuccess').replace('{count}', data.metadata.successfulPanels)}
         `;
         const cardBody = resultSection.querySelector('.card-body');
@@ -945,7 +1204,12 @@ function showResult(data, selectedPlans = null) {
     }
     
     resultSection.style.display = 'block';
-    
+
+    // Re-initialize Lucide icons for dynamic content
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
     // Scroll to result
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -974,9 +1238,11 @@ function handleDownload() {
     URL.revokeObjectURL(url);
 
     // Show feedback
-    downloadBtn.textContent = '✅ ' + t('buttons.downloadSuccess');
+    downloadBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5 inline-block"></i> ' + t('buttons.downloadSuccess');
+    lucide.createIcons();
     setTimeout(() => {
-        downloadBtn.textContent = '⬇️ ' + t('buttons.download');
+        downloadBtn.innerHTML = '<i data-lucide="download" class="w-5 h-5 inline-block"></i> ' + t('buttons.download');
+        lucide.createIcons();
     }, 2000);
 }
 
@@ -989,9 +1255,11 @@ async function handleCopy() {
         await navigator.clipboard.writeText(dataStr);
         
         // Show feedback
-        copyBtn.textContent = '✅ ' + t('buttons.copySuccess');
+        copyBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5 inline-block"></i> ' + t('buttons.copySuccess');
+        lucide.createIcons();
         setTimeout(() => {
-            copyBtn.textContent = '📋 ' + t('buttons.copy');
+            copyBtn.innerHTML = '<i data-lucide="clipboard" class="w-5 h-5 inline-block"></i> ' + t('buttons.copy');
+            lucide.createIcons();
         }, 2000);
     } catch (error) {
         console.error('Copy failed:', error);
@@ -1006,10 +1274,12 @@ function toggleJsonView() {
     if (jsonPreview.style.display === 'none') {
         jsonContent.textContent = JSON.stringify(generatedDashboard, null, 2);
         jsonPreview.style.display = 'block';
-        viewBtn.textContent = '🙈 ' + t('buttons.hideView');
+        viewBtn.innerHTML = '<i data-lucide="eye-off" class="w-5 h-5 inline-block"></i> ' + t('buttons.hideView');
+        lucide.createIcons();
     } else {
         jsonPreview.style.display = 'none';
-        viewBtn.textContent = '👁️ ' + t('buttons.view');
+        viewBtn.innerHTML = '<i data-lucide="eye" class="w-5 h-5 inline-block"></i> ' + t('buttons.view');
+        lucide.createIcons();
     }
 }
 
@@ -1017,6 +1287,9 @@ function toggleJsonView() {
 function handleRetry() {
     errorSection.style.display = 'none';
     metricsInput.focus();
+
+    // Reset step indicator to step 1 (Paste Metrics)
+    updateStepIndicator(1);
 }
 
 // Check server health on load
@@ -1178,7 +1451,8 @@ function handleSaveCurrentConfig() {
 // Open add new config modal
 function openAddConfigModal() {
     editingConfigId = null;
-    editConfigTitle.textContent = '➕ ' + t('modals.addConfig');
+    editConfigTitle.innerHTML = '<i data-lucide="plus" class="w-5 h-5 inline-block"></i> ' + t('modals.addConfig');
+    lucide.createIcons();
     editConfigName.value = '';
     editConfigApiKey.value = '';
     editConfigApiBaseURL.value = '';
@@ -1192,7 +1466,8 @@ window.handleEditConfig = function(configId) {
     if (!config) return;
     
     editingConfigId = configId;
-    editConfigTitle.textContent = '✏️ ' + t('modals.editConfig');
+    editConfigTitle.innerHTML = '<i data-lucide="edit-3" class="w-5 h-5 inline-block"></i> ' + t('modals.editConfig');
+    lucide.createIcons();
     editConfigName.value = config.name;
     editConfigApiKey.value = config.apiKey;
     editConfigApiBaseURL.value = config.apiBaseURL || '';
@@ -1273,17 +1548,25 @@ window.handleDeleteConfig = function(configId) {
 
 // Initialize app
 async function initializeApp() {
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    // Check landing page preference first
+    checkLandingPagePreference();
+
     // Initialize i18n first
     const currentLang = await initI18n();
     languageSelector.value = currentLang;
-    
+
     // Apply translations to static elements
     applyTranslations();
-    
+
     // Initialize config management
     loadConfigs();
     renderConfigSelector();
-    
+
     // Auto-load the last saved config if exists
     const validConfigs = apiConfigs.filter(c => c.apiKey || c.apiBaseURL || c.modelName);
     if (validConfigs.length > 0) {
@@ -1292,7 +1575,7 @@ async function initializeApp() {
         applyConfig(lastConfig);
         configSelector.value = lastConfig.id;
     }
-    
+
     // Check server health
     checkHealth();
 }

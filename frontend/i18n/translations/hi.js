@@ -3,7 +3,38 @@ export default {
         title: "मेट्रिक्स से Grafana डैशबोर्ड",
         subtitle: "AI का उपयोग करके अपने Prometheus मेट्रिक्स से स्वचालित रूप से सुंदर Grafana डैशबोर्ड जेनरेट करें"
     },
-    
+
+    stepIndicator: {
+        step1: "मेट्रिक्स पेस्ट करें",
+        step2: "LLM कॉन्फ़िगर करें",
+        step3: "मेट्रिक्स समीक्षा",
+        step4: "पैनल चुनें",
+        step5: "डाउनलोड"
+    },
+
+    landing: {
+        heroSubtitle: "AI-संचालित स्वचालन के साथ सेकंडों में अपने Prometheus मेट्रिक्स को सुंदर, जानकारीपूर्ण Grafana डैशबोर्ड में बदलें",
+        tryNow: "अभी आज़माएं",
+        painPointsTitle: "मैन्युअल डैशबोर्ड बनाने से थक गए?",
+        painPointsSubtitle: "शुरू से Grafana डैशबोर्ड बनाना समय लेने वाला और त्रुटि-प्रवण है",
+        painPoint1Title: "घंटों का मैन्युअल काम",
+        painPoint1Desc: "प्रत्येक डैशबोर्ड के लिए PromQL क्वेरी लिखना और पैनल कॉन्फ़िगर करना घंटों का थकाऊ काम लेता है",
+        painPoint2Title: "जटिल PromQL सिंटैक्स",
+        painPoint2Desc: "PromQL की सीखने की अवस्था तीव्र है, जिससे कुशल क्वेरी लिखना कठिन हो जाता है",
+        painPoint3Title: "असंगत डैशबोर्ड",
+        painPoint3Desc: "मैन्युअल निर्माण से असंगत लेआउट और महत्वपूर्ण मेट्रिक्स छूट जाते हैं",
+        howItWorksTitle: "यह कैसे काम करता है",
+        howItWorksSubtitle: "अपना परफेक्ट डैशबोर्ड जेनरेट करने के तीन सरल चरण",
+        step1Title: "अपने मेट्रिक्स पेस्ट करें",
+        step1Desc: "अपने /metrics एंडपॉइंट से मेट्रिक्स कॉपी करें और टूल में पेस्ट करें",
+        step2Title: "AI विश्लेषण",
+        step2Desc: "हमारा AI आपके मेट्रिक्स का विश्लेषण करता है और इष्टतम पैनल कॉन्फ़िगरेशन की योजना बनाता है",
+        step3Title: "डाउनलोड और इम्पोर्ट",
+        step3Desc: "जेनरेट किया गया JSON डाउनलोड करें और सीधे Grafana में इम्पोर्ट करें",
+        ctaTitle: "घंटों का काम बचाने के लिए तैयार?",
+        ctaSubtitle: "एक मिनट से कम में अपना पहला डैशबोर्ड जेनरेट करें"
+    },
+
     steps: {
         step1: {
             title: "चरण 1: अपने मेट्रिक्स पेस्ट करें",
@@ -54,15 +85,21 @@ export default {
     
     labels: {
         apiKey: "API कुंजी:",
+        apiKeyShort: "API कुंजी:",
         apiBaseURL: "API बेस URL:",
+        baseURLShort: "बेस URL:",
         modelName: "मॉडल का नाम:",
+        modelShort: "मॉडल:",
         optional: "(वैकल्पिक)",
         savedConfig: "सहेजा गया कॉन्फ़िगरेशन:",
         enterManually: "-- मैन्युअल रूप से दर्ज करें --",
         configName: "कॉन्फ़िगरेशन का नाम",
         metricsDetected: "मेट्रिक्स का पता चला",
         panelsSelected: "पैनल चयनित",
-        of: "में से"
+        of: "में से",
+        notSet: "(सेट नहीं)",
+        editConfiguration: "कॉन्फ़िगरेशन संपादित करें",
+        deleteConfiguration: "कॉन्फ़िगरेशन हटाएं"
     },
     
     placeholders: {
@@ -104,9 +141,11 @@ http_requests_total{handler="/api/v1/user",method="GET",status_code="200"} 1027
         commonLabels: "सामान्य लेबल",
         metricTypesTitle: "मेट्रिक प्रकार",
         labels: "लेबल:",
+        labelsTitle: "लेबल:",
         type: "प्रकार:",
         useMetrics: "मेट्रिक्स का उपयोग करें:",
-        queryHints: "क्वेरी संकेत:"
+        queryHints: "क्वेरी संकेत:",
+        samples: "नमूने"
     },
     
     modals: {

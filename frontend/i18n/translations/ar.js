@@ -3,7 +3,38 @@ export default {
         title: "المقاييس إلى لوحة معلومات Grafana",
         subtitle: "قم بإنشاء لوحات معلومات Grafana جميلة تلقائيًا من مقاييس Prometheus الخاصة بك باستخدام الذكاء الاصطناعي"
     },
-    
+
+    stepIndicator: {
+        step1: "لصق المقاييس",
+        step2: "تكوين LLM",
+        step3: "مراجعة المقاييس",
+        step4: "اختيار اللوحات",
+        step5: "تحميل"
+    },
+
+    landing: {
+        heroSubtitle: "حوّل مقاييس Prometheus الخاصة بك إلى لوحات معلومات Grafana جميلة ومفيدة في ثوانٍ باستخدام الأتمتة المدعومة بالذكاء الاصطناعي",
+        tryNow: "جربه الآن",
+        painPointsTitle: "هل سئمت من إنشاء لوحات المعلومات يدويًا؟",
+        painPointsSubtitle: "إنشاء لوحات معلومات Grafana من الصفر يستغرق وقتًا طويلاً وعرضة للأخطاء",
+        painPoint1Title: "ساعات من العمل اليدوي",
+        painPoint1Desc: "كتابة استعلامات PromQL وتكوين اللوحات تستغرق ساعات من العمل الممل لكل لوحة معلومات",
+        painPoint2Title: "بناء جملة PromQL المعقد",
+        painPoint2Desc: "PromQL لديه منحنى تعلم حاد، مما يجعل من الصعب كتابة استعلامات فعالة",
+        painPoint3Title: "لوحات معلومات غير متسقة",
+        painPoint3Desc: "الإنشاء اليدوي يؤدي إلى تخطيطات غير متسقة ومقاييس مهمة مفقودة",
+        howItWorksTitle: "كيف يعمل",
+        howItWorksSubtitle: "ثلاث خطوات بسيطة لإنشاء لوحة المعلومات المثالية",
+        step1Title: "الصق مقاييسك",
+        step1Desc: "انسخ المقاييس من نقطة النهاية /metrics والصقها في الأداة",
+        step2Title: "تحليل الذكاء الاصطناعي",
+        step2Desc: "يحلل الذكاء الاصطناعي مقاييسك ويخطط لتكوينات اللوحات المثلى",
+        step3Title: "تحميل واستيراد",
+        step3Desc: "قم بتحميل JSON المُنشأ واستيراده مباشرة إلى Grafana",
+        ctaTitle: "هل أنت مستعد لتوفير ساعات من العمل؟",
+        ctaSubtitle: "أنشئ لوحة المعلومات الأولى في أقل من دقيقة"
+    },
+
     steps: {
         step1: {
             title: "الخطوة 1: الصق مقاييسك",
@@ -54,15 +85,21 @@ export default {
     
     labels: {
         apiKey: "مفتاح API:",
+        apiKeyShort: "مفتاح API:",
         apiBaseURL: "عنوان URL الأساسي لـ API:",
+        baseURLShort: "URL الأساسي:",
         modelName: "اسم النموذج:",
+        modelShort: "النموذج:",
         optional: "(اختياري)",
         savedConfig: "التكوين المحفوظ:",
         enterManually: "-- أدخل يدويًا --",
         configName: "اسم التكوين",
         metricsDetected: "المقاييس المكتشفة",
         panelsSelected: "اللوحات المحددة",
-        of: "من"
+        of: "من",
+        notSet: "(غير محدد)",
+        editConfiguration: "تحرير التكوين",
+        deleteConfiguration: "حذف التكوين"
     },
     
     placeholders: {
@@ -104,9 +141,11 @@ http_requests_total{handler="/api/v1/user",method="GET",status_code="200"} 1027
         commonLabels: "التسميات الشائعة",
         metricTypesTitle: "أنواع المقاييس",
         labels: "التسميات:",
+        labelsTitle: "التسميات:",
         type: "النوع:",
         useMetrics: "استخدام المقاييس:",
-        queryHints: "تلميحات الاستعلام:"
+        queryHints: "تلميحات الاستعلام:",
+        samples: "عينات"
     },
     
     modals: {

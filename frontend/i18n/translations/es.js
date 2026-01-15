@@ -1,9 +1,40 @@
 export default {
     app: {
-        title: "Métricas a Dashboard de Grafana",
-        subtitle: "Genera automáticamente hermosos dashboards de Grafana a partir de tus métricas de Prometheus usando IA"
+        title: "Metricas a Dashboard de Grafana",
+        subtitle: "Genera automaticamente hermosos dashboards de Grafana a partir de tus metricas de Prometheus usando IA"
     },
-    
+
+    stepIndicator: {
+        step1: "Pegar Metricas",
+        step2: "Configurar LLM",
+        step3: "Revisar Metricas",
+        step4: "Seleccionar Paneles",
+        step5: "Descargar"
+    },
+
+    landing: {
+        heroSubtitle: "Transforma tus métricas de Prometheus en hermosos e informativos dashboards de Grafana en segundos con automatización impulsada por IA",
+        tryNow: "Pruébalo Ahora",
+        painPointsTitle: "¿Cansado de Crear Dashboards Manualmente?",
+        painPointsSubtitle: "Crear dashboards de Grafana desde cero consume tiempo y es propenso a errores",
+        painPoint1Title: "Horas de Trabajo Manual",
+        painPoint1Desc: "Escribir consultas PromQL y configurar paneles toma horas de trabajo tedioso para cada dashboard",
+        painPoint2Title: "Sintaxis PromQL Compleja",
+        painPoint2Desc: "PromQL tiene una curva de aprendizaje pronunciada, dificultando escribir consultas eficientes",
+        painPoint3Title: "Dashboards Inconsistentes",
+        painPoint3Desc: "La creación manual lleva a layouts inconsistentes y métricas importantes faltantes",
+        howItWorksTitle: "Cómo Funciona",
+        howItWorksSubtitle: "Tres simples pasos para generar tu dashboard perfecto",
+        step1Title: "Pega tus Métricas",
+        step1Desc: "Copia métricas de tu endpoint /metrics y pégalas en la herramienta",
+        step2Title: "Análisis de IA",
+        step2Desc: "Nuestra IA analiza tus métricas y planifica configuraciones óptimas de paneles",
+        step3Title: "Descarga e Importa",
+        step3Desc: "Descarga el JSON generado e impórtalo directamente en Grafana",
+        ctaTitle: "¿Listo para Ahorrar Horas de Trabajo?",
+        ctaSubtitle: "Genera tu primer dashboard en menos de un minuto"
+    },
+
     steps: {
         step1: {
             title: "Paso 1: Pega tus Métricas",
@@ -54,15 +85,21 @@ export default {
     
     labels: {
         apiKey: "Clave API:",
+        apiKeyShort: "Clave API:",
         apiBaseURL: "URL Base de la API:",
+        baseURLShort: "URL Base:",
         modelName: "Nombre del Modelo:",
+        modelShort: "Modelo:",
         optional: "(opcional)",
-        savedConfig: "Configuración Guardada:",
+        savedConfig: "Configuracion Guardada:",
         enterManually: "-- Ingresar Manualmente --",
-        configName: "Nombre de la Configuración",
-        metricsDetected: "métricas detectadas",
+        configName: "Nombre de la Configuracion",
+        metricsDetected: "metricas detectadas",
         panelsSelected: "paneles seleccionados",
-        of: "de"
+        of: "de",
+        notSet: "(no establecido)",
+        editConfiguration: "Editar configuracion",
+        deleteConfiguration: "Eliminar configuracion"
     },
     
     placeholders: {
@@ -100,13 +137,15 @@ Pega aquí tus métricas de Prometheus`
     },
     
     sections: {
-        metricsList: "Lista de Métricas",
+        metricsList: "Lista de Metricas",
         commonLabels: "Etiquetas Comunes",
-        metricTypesTitle: "Tipos de Métricas",
+        metricTypesTitle: "Tipos de Metricas",
         labels: "Etiquetas:",
+        labelsTitle: "Etiquetas:",
         type: "Tipo:",
-        useMetrics: "Usar Métricas:",
-        queryHints: "Sugerencias de Consulta:"
+        useMetrics: "Usar Metricas:",
+        queryHints: "Sugerencias de Consulta:",
+        samples: "muestras"
     },
     
     modals: {

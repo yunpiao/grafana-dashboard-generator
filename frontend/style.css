@@ -1,3 +1,15 @@
+/* ============================================
+   Grafana Dashboard Generator - Custom Styles
+
+   This file contains styles that Tailwind CSS cannot cover:
+   - CSS Custom Properties (used by JS and legacy components)
+   - Custom animations
+   - RTL support for Arabic
+   - Language-specific font support
+   - Component styles used by dynamic JS content
+   ============================================ */
+
+/* CSS Custom Properties - Used by legacy components and JS */
 :root {
     --primary-color: #3b82f6;
     --primary-hover: #2563eb;
@@ -16,22 +28,9 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-        sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background: var(--bg-color);
-    color: var(--text-primary);
-    line-height: 1.6;
-}
+/* ============================================
+   Layout Components - Still referenced in HTML
+   ============================================ */
 
 .container {
     max-width: 1200px;
@@ -55,13 +54,6 @@ header {
     text-align: center;
 }
 
-h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-}
-
 .header-emoji {
     display: inline-block;
 }
@@ -73,7 +65,16 @@ h1 {
     margin: 0 auto;
 }
 
-/* Language Switcher */
+footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============================================
+   Language Switcher
+   ============================================ */
+
 .language-switcher {
     flex-shrink: 0;
 }
@@ -91,71 +92,18 @@ h1 {
     outline: none;
 }
 
-.language-select:hover {
+.language-select:hover,
+.language-select:focus {
     border-color: var(--primary-color);
 }
 
 .language-select:focus {
-    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-@media (max-width: 768px) {
-    .header-content {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .header-text {
-        order: 2;
-    }
-    
-    .language-switcher {
-        order: 1;
-        align-self: flex-end;
-    }
-}
-
-.card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    margin-bottom: 2rem;
-    overflow: hidden;
-}
-
-.card-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.card-header.compact {
-    padding: 1rem;
-}
-
-.card-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.card-header.compact h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0;
-}
-
-.card-header p {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-.card-body.compact {
-    padding: 1rem;
-}
+/* ============================================
+   Form Elements - Used in config forms
+   ============================================ */
 
 textarea {
     width: 100%;
@@ -175,84 +123,83 @@ textarea:focus {
     border-color: var(--primary-color);
 }
 
-.metrics-stats {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: var(--code-bg);
+input[type="password"],
+input[type="text"] {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
 }
 
-.stat-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
+input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+label {
+    display: block;
     font-weight: 500;
+    margin-bottom: 0.5rem;
     color: var(--text-primary);
+}
+
+.optional {
+    font-weight: 400;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+code {
+    background: var(--code-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875em;
 }
 
 .form-group {
     margin-bottom: 1rem;
 }
 
-.form-group-inline {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.form-group-inline label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0;
-    min-width: 120px;
-    flex-shrink: 0;
-    font-weight: 500;
-    color: var(--text-primary);
+.form-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
     font-size: 0.9rem;
+    background-color: white;
+    cursor: pointer;
 }
 
-.form-group-inline input,
-.form-group-inline select {
-    flex: 1;
-    margin: 0;
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
 }
 
-/* Configuration Form Grid Layout */
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* ============================================
+   Configuration Form Grid Layout
+   ============================================ */
+
 .config-form-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 0.75rem;
-}
-
-@media (max-width: 1200px) {
-    .config-form-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .config-form-grid .form-group-vertical:nth-child(3) {
-        grid-column: span 2;
-    }
-}
-
-@media (max-width: 1024px) {
-    .config-header-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .config-selector-inline {
-        width: 100%;
-        max-width: 100%;
-        margin-left: 0;
-    }
-    
-    .config-selector-inline select {
-        min-width: 0;
-        width: 100%;
-    }
 }
 
 .form-group-vertical {
@@ -276,139 +223,95 @@ textarea:focus {
     margin: 0;
 }
 
+.config-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
 
-label {
-    display: block;
+.config-header-row h2 {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.config-selector-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    max-width: 400px;
+}
+
+.config-selector-inline label {
+    font-size: 0.875rem;
     font-weight: 500;
-    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    margin: 0;
+}
+
+.config-selector-inline select {
+    min-width: 250px;
+}
+
+.config-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ============================================
+   Card Components - Still used in HTML
+   ============================================ */
+
+.card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.card-header p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   Metrics Stats Badge
+   ============================================ */
+
+.metrics-stats {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--code-bg);
+    border-radius: 6px;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-primary);
 }
 
-.optional {
-    font-weight: 400;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
-
-input[type="password"],
-input[type="text"] {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-}
-
-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.help-text {
-    display: block;
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-}
-
-code {
-    background: var(--code-bg);
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.875em;
-}
+/* ============================================
+   Action Section
+   ============================================ */
 
 .action-section {
     text-align: center;
     margin: 2rem 0;
 }
 
-.btn {
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-primary {
-    background: var(--primary-color);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: var(--primary-hover);
-    box-shadow: var(--shadow-lg);
-}
-
-.btn-success {
-    background: var(--success-color);
-    color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-    background: var(--success-hover);
-}
-
-.btn-secondary {
-    background: var(--secondary-color);
-    color: white;
-    font-weight: 500;
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: var(--secondary-hover);
-    box-shadow: var(--shadow);
-}
-
 .progress-section {
     margin: 2rem 0;
 }
 
-.progress-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 3rem;
-    text-align: center;
-    box-shadow: var(--shadow);
-}
-
-.spinner {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 1.5rem;
-    border: 4px solid var(--border-color);
-    border-top: 4px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.progress-text h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-}
-
-.progress-text p {
-    color: var(--text-secondary);
-}
+/* ============================================
+   Result Stats Grid
+   ============================================ */
 
 .result-stats {
     display: grid;
@@ -445,6 +348,10 @@ code {
     justify-content: center;
 }
 
+/* ============================================
+   JSON Preview
+   ============================================ */
+
 #jsonPreview {
     margin-top: 2rem;
 }
@@ -464,6 +371,10 @@ code {
     max-height: 500px;
     overflow-y: auto;
 }
+
+/* ============================================
+   Error Card
+   ============================================ */
 
 .error-card {
     background: #fef2f2;
@@ -492,13 +403,9 @@ code {
     margin-bottom: 1rem;
 }
 
-.info-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow);
-}
+/* ============================================
+   Info Card (Footer)
+   ============================================ */
 
 .info-card h3 {
     font-size: 1.25rem;
@@ -515,36 +422,10 @@ code {
     color: var(--text-secondary);
 }
 
-footer {
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-}
+/* ============================================
+   Panel Plans - JS Generated Content
+   ============================================ */
 
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    .result-stats {
-        grid-template-columns: 1fr;
-    }
-
-    .actions {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* Panel Plans Styles */
 .panel-plans-controls {
     display: flex;
     justify-content: space-between;
@@ -570,11 +451,6 @@ footer {
 .selection-actions {
     display: flex;
     gap: 0.5rem;
-}
-
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
 }
 
 .panel-plans-list {
@@ -679,17 +555,12 @@ footer {
     word-break: break-word;
 }
 
-/* Panel Plans Actions */
 .panel-plans-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
-}
-
-.panel-plans-actions .btn {
-    min-width: 200px;
 }
 
 /* Warning Message */
@@ -706,7 +577,10 @@ footer {
     color: #78350f;
 }
 
-/* Metrics Information Styles */
+/* ============================================
+   Metrics Information - JS Generated Content
+   ============================================ */
+
 .metrics-summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -748,7 +622,6 @@ footer {
     color: var(--text-primary);
 }
 
-/* Metrics List */
 .metrics-list {
     display: grid;
     gap: 1rem;
@@ -804,6 +677,7 @@ footer {
     flex-grow: 1;
 }
 
+/* Type Badges - JS Generated */
 .type-badge {
     padding: 0.125rem 0.5rem;
     border-radius: 4px;
@@ -877,15 +751,6 @@ footer {
     margin-left: auto;
 }
 
-/* Legacy styles - keep for compatibility */
-.metric-labels {
-    margin: 0.25rem 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    align-items: center;
-}
-
 .labels-title {
     font-size: 0.75rem;
     color: var(--text-secondary);
@@ -905,14 +770,6 @@ footer {
     border: 1px solid #bbf7d0;
 }
 
-/* Legacy metric-stats - now using metric-stats-inline */
-.metric-stats {
-    margin-top: 0.25rem;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-}
-
-/* Labels List */
 .labels-list {
     display: flex;
     flex-wrap: wrap;
@@ -977,7 +834,6 @@ footer {
     font-style: italic;
 }
 
-/* Metrics Actions */
 .metrics-actions {
     display: flex;
     gap: 1rem;
@@ -987,88 +843,10 @@ footer {
     margin-top: 1.5rem;
 }
 
-.metrics-actions .btn {
-    min-width: 200px;
-}
+/* ============================================
+   Modal Styles
+   ============================================ */
 
-/* Configuration Management Styles */
-.config-header-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.card-header.compact .config-header-actions {
-    margin-top: 0.25rem;
-}
-
-.config-header-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.config-header-row h2 {
-    margin: 0;
-    flex-shrink: 0;
-}
-
-.config-selector-inline {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-left: auto;
-    max-width: 400px;
-}
-
-.config-selector-inline label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
-    white-space: nowrap;
-    margin: 0;
-}
-
-.config-selector-inline select {
-    min-width: 250px;
-}
-
-.config-actions {
-    margin-top: 0.75rem;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.form-select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.9rem;
-    background-color: white;
-    cursor: pointer;
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-.form-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-}
-
-/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -1140,7 +918,10 @@ footer {
     border-top: 1px solid var(--border-color);
 }
 
-/* Config List */
+/* ============================================
+   Config List - JS Generated Content
+   ============================================ */
+
 .config-list {
     display: grid;
     gap: 1rem;
@@ -1257,209 +1038,10 @@ footer {
     pointer-events: none;
 }
 
-.btn-danger {
-    background-color: var(--danger-color);
-    color: white;
-}
+/* ============================================
+   Row Layout - JS Generated Content
+   ============================================ */
 
-.btn-danger:hover {
-    background-color: #dc2626;
-}
-
-/* Responsive for Panel Plans */
-@media (max-width: 768px) {
-    .config-form-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-    
-    .config-header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-    }
-    
-    .config-selector-inline {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-        min-width: 0;
-    }
-    
-    .form-group-inline {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .form-group-inline label {
-        min-width: auto;
-        width: 100%;
-    }
-    
-    .form-group-inline input,
-    .form-group-inline select {
-        width: 100%;
-    }
-    
-    .panel-plans-controls {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-    }
-    
-    .selection-actions {
-        width: 100%;
-    }
-    
-    .selection-actions .btn {
-        flex: 1;
-    }
-    
-    .panel-plans-actions {
-        flex-direction: column;
-    }
-    
-    .panel-plans-actions .btn {
-        width: 100%;
-    }
-    
-    .metrics-summary {
-        grid-template-columns: 1fr;
-    }
-    
-    .types-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .metrics-actions {
-        flex-direction: column;
-    }
-    
-    .metrics-actions .btn {
-        width: 100%;
-    }
-
-    .row-panels-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .modal-content {
-        width: 95%;
-        max-height: 95vh;
-    }
-    
-    .config-item {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .config-radio {
-        margin-top: 0;
-    }
-    
-    .config-item-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .config-item-actions {
-        align-self: flex-end;
-    }
-    
-    .modal-actions {
-        flex-direction: column;
-    }
-    
-    .modal-actions .btn {
-        width: 100%;
-    }
-}
-
-/* RTL Support for Arabic */
-[dir="rtl"] {
-    direction: rtl;
-}
-
-[dir="rtl"] body {
-    font-family: 'Segoe UI', Tahoma, Arial, 'Noto Sans Arabic', sans-serif;
-}
-
-[dir="rtl"] .header-content {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .config-header-row {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .form-group-inline {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .panel-plans-controls {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .selection-actions {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .panel-plans-actions {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .metrics-actions {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .actions {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .modal-actions {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .config-item {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .config-item-header {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .config-item-actions {
-    flex-direction: row-reverse;
-}
-
-[dir="rtl"] .plan-details {
-    text-align: right;
-}
-
-[dir="rtl"] .result-stats {
-    direction: ltr;
-}
-
-/* Font support for different languages */
-html[lang^="hi"] body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Devanagari', 'Noto Sans', sans-serif;
-}
-
-html[lang^="ar"] body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Arabic', 'Noto Sans', sans-serif;
-}
-
-html[lang="zh-CN"] body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-}
-
-html[lang^="es"] body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-}
-
-/* Row Layout Styles */
 .row-header {
     display: flex;
     align-items: center;
@@ -1518,7 +1100,6 @@ html[lang^="es"] body {
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
-/* Panel Size Badge */
 .panel-size {
     font-size: 0.75rem;
     color: var(--text-secondary);
@@ -1529,8 +1110,198 @@ html[lang^="es"] body {
     font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
-/* Indent panels under row */
-.row-header + .panel-plan-card {
-    margin-left: 0;
+/* ============================================
+   Responsive Styles
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .config-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .config-form-grid .form-group-vertical:nth-child(3) {
+        grid-column: span 2;
+    }
 }
 
+@media (max-width: 1024px) {
+    .config-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .config-selector-inline {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+    }
+
+    .config-selector-inline select {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .config-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .result-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .panel-plans-controls {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .selection-actions {
+        width: 100%;
+    }
+
+    .panel-plans-actions,
+    .metrics-actions,
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .metrics-summary,
+    .types-list {
+        grid-template-columns: 1fr;
+    }
+
+    .row-panels-container {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .config-item {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .config-radio {
+        margin-top: 0;
+    }
+
+    .config-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .config-item-actions {
+        align-self: flex-end;
+    }
+}
+
+/* ============================================
+   RTL Support for Arabic
+   ============================================ */
+
+[dir="rtl"] {
+    direction: rtl;
+}
+
+[dir="rtl"] body {
+    font-family: 'Segoe UI', Tahoma, Arial, 'Noto Sans Arabic', sans-serif;
+}
+
+[dir="rtl"] .header-content,
+[dir="rtl"] .config-header-row,
+[dir="rtl"] .panel-plans-controls,
+[dir="rtl"] .selection-actions,
+[dir="rtl"] .panel-plans-actions,
+[dir="rtl"] .metrics-actions,
+[dir="rtl"] .actions,
+[dir="rtl"] .modal-actions,
+[dir="rtl"] .config-item,
+[dir="rtl"] .config-item-header,
+[dir="rtl"] .config-item-actions {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .plan-details {
+    text-align: right;
+}
+
+[dir="rtl"] .result-stats {
+    direction: ltr;
+}
+
+/* ============================================
+   Language-specific Font Support
+   ============================================ */
+
+html[lang^="hi"] body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Devanagari', 'Noto Sans', sans-serif;
+}
+
+html[lang^="ar"] body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans Arabic', 'Noto Sans', sans-serif;
+}
+
+html[lang="zh-CN"] body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+html[lang^="es"] body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* ============================================
+   Custom Animations
+   ============================================ */
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Terminal scrollbar styling */
+#terminalLogs::-webkit-scrollbar {
+    width: 6px;
+}
+
+#terminalLogs::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#terminalLogs::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 3px;
+}
+
+#terminalLogs::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
