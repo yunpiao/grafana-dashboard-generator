@@ -66,6 +66,9 @@ jobs:
           # Copy simple functions that don't need bundling
           cp functions/api/health.js dist/functions/api/
           cp functions/_middleware.js dist/functions/ 2>/dev/null || true
+
+          # Copy _routes.json to exclude static assets from Functions
+          cp functions/_routes.json dist/ 2>/dev/null || true
           
           # Debug: show dist structure
           echo "=== dist/functions structure ==="
