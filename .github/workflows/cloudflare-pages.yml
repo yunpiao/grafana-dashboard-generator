@@ -38,11 +38,16 @@ jobs:
           cp backend/src/llmService.js functions/lib/
           cp backend/src/prompts.js functions/lib/
           
+          # Build frontend
+          echo "=== Building frontend ==="
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
           # Create output directory
           mkdir -p dist
-          
-          # Copy frontend files
-          cp -r frontend/* dist/
+
+          # Copy built frontend files (not source files)
+          cp -r frontend/dist/* dist/
           
           # Create functions output directories
           mkdir -p dist/functions/api
