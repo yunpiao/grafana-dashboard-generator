@@ -228,3 +228,83 @@ const response = await fetch(`${baseURL}/chat/completions`, {
 - `e5c42b9` - 重命名 `_lib` → `lib`
 - `3f46760` - 添加 esbuild 打包
 - `4da5bd4` - 移除 openai 依赖，改用 fetch
+
+---
+
+## 前端部署问题排查 (2026-02-02)
+
+### 问题现象
+网站访问报错：
+```
+Failed to load module script: Expected a JavaScript module but server responded with MIME type "application/octet-stream"
+```
+
+### 排查过程
+
+#### 1. Cloudflare Access 保护（已解决）
+- **现象**：HTTP 302 重定向到 `cloudflareaccess.com` 登录页
+- **解决**：在 Cloudflare Zero Trust 控制台删除 Access 应用保护
+
+#### 2. MIME 类型错误（核心问题）
+- **现象**：JS 文件返回 `content-type: text/html` 而非 `application/javascript`
+- **诊断命令**：
+  ```bash
+  curl -sI "https://xxx.site/assets/index-xxx.js" | head -5
+  ```
+
+### 根本原因
+
+**GitHub Actions workflow 部署逻辑错误**：
+
+```yaml
+# 错误：直接复制源文件（.tsx）
+cp -r frontend/* dist/
+
+# 正确：先构建，再复制构建产物
+npm run build --prefix frontend
+cp -r frontend/dist/* dist/
+```
+
+**问题链**：
+1. workflow 复制源文件 `index.tsx`，浏览器无法执行 TypeScript
+2. 所有请求经过 Functions middleware，返回错误 MIME 类型
+3. 缺少 `_routes.json` 配置，静态资源未被排除
+
+### 修复方案
+
+#### 1. 修改 workflow 添加前端构建步骤
+
+```yaml
+# .github/workflows/cloudflare-pages.yml
+- name: Build Cloudflare Pages bundle
+  run: |
+    # 构建前端
+    npm ci --prefix frontend
+    npm run build --prefix frontend
+
+    # 复制构建后的文件（不是源文件）
+    cp -r frontend/dist/* dist/
+```
+
+#### 2. 添加 `_routes.json` 排除静态资源
+
+```json
+// functions/_routes.json
+{
+  "version": 1,
+  "include": ["/api/*"],
+  "exclude": ["/assets/*", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg"]
+}
+```
+
+### 验证修复
+
+```bash
+# 检查 JS 文件 MIME 类型
+curl -sI "https://xxx.site/assets/index-xxx.js" | grep content-type
+# 期望: content-type: application/javascript
+```
+
+### 相关 Commits
+- `01a38e0` - fix: build frontend before deployment instead of copying source files
+- `3b8bcb6` - fix: move _routes.json to functions dir and update workflow
